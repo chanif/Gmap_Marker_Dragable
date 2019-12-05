@@ -1,0 +1,235 @@
+﻿@model Fast.Web.Models.UserModel
+@using Fast.Web.Resources;
+
+@section Styles{
+	<!-- Specific Page Vendor CSS -->
+	<link href="~/Content/dashforge/lib/typicons.font/typicons.css" rel="stylesheet">
+	<link href="~/Content/dashforge/lib/prismjs/themes/prism-vs.css" rel="stylesheet">
+	<link href="~/Content/dashforge/lib/datatables.net-dt/css/jquery.dataTables.min.css" rel="stylesheet">
+	<link href="~/Content/dashforge/lib/datatables.net-responsive-dt/css/responsive.dataTables.min.css" rel="stylesheet">
+	<link href="~/Content/dashforge/lib/select2/css/select2.min.css" rel="stylesheet">
+}
+
+<div class="content content-fixed bd-b">
+	<div class="container pd-x-0 pd-lg-x-10 pd-xl-x-0">
+		<div class="d-sm-flex align-items-center justify-content-between">
+			<div>
+				<h4 class="mg-b-5">@UIResources.UserList</h4>
+				<p class="mg-b-0 tx-color-03">@UIResources.UserManagement</p>
+			</div>
+			<div class="mg-t-20 mg-sm-t-0">
+				<button class="btn btn-white"><i data-feather="printer" class="mg-r-5"></i> @UIResources.Print</button>
+				<button class="btn btn-primary mg-l-5" data-toggle="modal" data-target="#modalAddUser"><i data-feather="plus" class="mg-r-5"></i> @UIResources.AddNew</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="content tx-13">
+	<div class="container pd-x-0 pd-lg-x-10 pd-xl-x-0">
+		<div data-label="Example" class="df-example demo-table">
+			<table class="table table-bordered table-striped mb-none border-bottom-0" id="userTable">
+				<thead>
+					<tr>
+						<th>@UIResources.ID</th>
+						<th>@UIResources.Username</th>
+						<th>@UIResources.FullName</th>
+						<th>@UIResources.Role</th>
+						<th>@UIResources.Location</th>
+						<th>@UIResources.UserStatus</th>
+						<th>@UIResources.LastLogin</th>
+						<th>@UIResources.Action</th>
+					</tr>
+				</thead>
+			</table>
+		</div>
+	</div>
+</div>
+
+<div class="modal fade" id="modalAddUser" tabindex="-1" role="dialog" aria-hidden="true">
+	<div class="modal-dialog modal-dialog-centered wd-sm-650" role="document">
+		<div class="modal-content">
+			<div class="modal-header pd-y-20 pd-x-20 pd-sm-x-30">
+				<a href="" role="button" class="close pos-absolute t-15 r-15" data-dismiss="modal" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</a>
+				<div class="media align-items-center">
+					<span class="tx-color-03 d-none d-sm-block"><i data-feather="user-plus" class="wd-60 ht-60"></i></span>
+					<div class="media-body mg-sm-l-20">
+						<h4 class="tx-18 tx-sm-20 mg-b-2">@UIResources.AddNewUser</h4>
+						<p class="tx-13 tx-color-03 mg-b-0">@UIResources.FillAllRequiredFields</p>
+					</div>
+				</div><!-- media -->
+			</div><!-- modal-header -->
+			<div class="modal-body">
+				<ul class="nav nav-tabs" id="myTab" role="tablist">
+					<li class="nav-item">
+						<a class="nav-link active" id="basic-tab" data-toggle="tab" href="#basic" role="tab" aria-controls="basic" aria-selected="true">Basic</a>
+					</li>
+					<li class="nav-item">
+						<a class="nav-link" id="detail-tab" data-toggle="tab" href="#detail" role="tab" aria-controls="detail" aria-selected="false">Detail</a>
+					</li>
+				</ul>
+				<div class="tab-content bd bd-gray-300 bd-t-0 pd-20" id="myTabContent">
+					<div class="tab-pane fade show active" id="basic" role="tabpanel" aria-labelledby="home-tab">
+						<div class="row row-sm">
+							<div class="col-sm">
+								<label class="tx-10 tx-uppercase tx-medium tx-spacing-1 mg-b-5 tx-color-03">@UIResources.FirstName</label>
+								<input type="text" class="form-control" placeholder="Enter first name">
+							</div><!-- col -->
+							<div class="col-sm-5 mg-t-20 mg-sm-t-0">
+								<label class="tx-10 tx-uppercase tx-medium tx-spacing-1 mg-b-5 tx-color-03">@UIResources.LastName</label>
+								<input type="text" class="form-control" placeholder="Enter last name">
+							</div><!-- col -->
+						</div>
+						<div class="row row-sm">
+							<div class="col-sm">
+								<label class="tx-10 tx-uppercase tx-medium tx-spacing-1 mg-b-5 tx-color-03">@UIResources.Username</label>
+								<input type="text" class="form-control" placeholder="Enter username">
+							</div><!-- col -->
+							<div class="col-sm-5 mg-t-20 mg-sm-t-0">
+								<label class="tx-10 tx-uppercase tx-medium tx-spacing-1 mg-b-5 tx-color-03">@UIResources.Password</label>
+								<input type="password" class="form-control" placeholder="Enter password">
+							</div><!-- col -->
+						</div>
+						<div class="row row-sm">
+							<div class="col-sm">
+								<label class="tx-10 tx-uppercase tx-medium tx-spacing-1 mg-b-5 tx-color-03">@UIResources.Location</label>
+								<input type="text" class="form-control" placeholder="Enter user location">
+							</div><!-- col -->
+							<div class="col-sm-5 mg-t-20 mg-sm-t-0">
+								<label class="tx-10 tx-uppercase tx-medium tx-spacing-1 mg-b-5 tx-color-03">@UIResources.Role</label>
+								<input type="text" class="form-control" placeholder="Enter user role">								
+							</div><!-- col -->
+						</div>
+					</div>
+					<div class="tab-pane fade" id="detail" role="tabpanel" aria-labelledby="detail-tab">
+						<div class="row row-sm">
+							<div class="col-sm">
+								<label class="tx-10 tx-uppercase tx-medium tx-spacing-1 mg-b-5 tx-color-03">@UIResources.Email</label>
+								<input type="text" class="form-control" placeholder="Enter email">
+							</div><!-- col -->
+							<div class="col-sm-5 mg-t-20 mg-sm-t-0">
+								<label class="tx-10 tx-uppercase tx-medium tx-spacing-1 mg-b-5 tx-color-03">@UIResources.Phone</label>
+								<input type="text" class="form-control" placeholder="Enter phone">
+							</div><!-- col -->
+						</div>
+						<div class="row row-sm">
+							<div class="col-sm">
+								<label class="tx-10 tx-uppercase tx-medium tx-spacing-1 mg-b-5 tx-color-03">@UIResources.BirthDate</label>
+								<input type="text" class="form-control" placeholder="Enter user birthdate">
+							</div><!-- col -->
+							<div class="col-sm-5 mg-t-20 mg-sm-t-0">
+								<label class="tx-10 tx-uppercase tx-medium tx-spacing-1 mg-b-5 tx-color-03">@UIResources.Status</label>
+								<input type="text" class="form-control" placeholder="Enter user status">
+							</div><!-- col -->
+						</div>
+						<div class="row row-sm">
+							<div class="col-sm">
+								<label class="tx-10 tx-uppercase tx-medium tx-spacing-1 mg-b-5 tx-color-03">@UIResources.Address</label>
+								<input type="text" class="form-control" placeholder="Enter user address">
+							</div>
+						</div>
+					</div>
+				</div>
+			</div><!-- modal-body -->
+			<div class="modal-footer pd-x-20 pd-y-15">
+				<button type="button" class="btn btn-white" data-dismiss="modal">@UIResources.Cancel</button>
+				<button type="button" class="btn btn-primary">@UIResources.Save</button>
+			</div>
+		</div><!-- modal-content -->
+	</div><!-- modal-dialog -->
+</div><!-- modal -->
+
+@section Scripts{
+	<!-- Specific Page Vendor -->
+	<script src="~/Content/dashforge/lib/jquery/jquery.min.js"></script>
+	<script src="~/Content/dashforge/lib/bootstrap/js/bootstrap.bundle.min.js"></script>
+	<script src="~/Content/dashforge/lib/feather-icons/feather.min.js"></script>
+	<script src="~/Content/dashforge/lib/perfect-scrollbar/perfect-scrollbar.min.js"></script>
+	<script src="~/Content/dashforge/lib/prismjs/prism.js"></script>
+	<script src="~/Content/dashforge/lib/select2/js/select2.min.js"></script>
+	<script src="~/Content/dashforge/lib/datatables.net/js/jquery.dataTables.min.js"></script>
+	<script src="~/Content/dashforge/lib/datatables.net-dt/js/dataTables.dataTables.min.js"></script>
+	<script src="~/Content/dashforge/lib/datatables.net-responsive/js/dataTables.responsive.min.js"></script>
+	<script src="~/Content/dashforge/lib/datatables.net-responsive-dt/js/responsive.dataTables.min.js"></script>
+
+	<script type="text/javascript">
+    $(document).ready(function () {
+		$('#ddllocation').select2();
+        $('#userTable').dataTable({
+            "autoWidth": false,
+            "processing": true,
+            "serverSide": true,
+            "filter": true,
+            "orderMulti": false,
+            "pageLength": 10,
+            "ajax": {
+                "url": "/User/GetAll",
+                "type": "POST",
+                "datatype": "json"
+            },
+
+            "columnDefs":
+                [{
+                    "targets": [0],
+					"searchable": false,
+					"orderable": false
+                },
+                {
+                    "targets": [1],
+                    "searchable": true,
+					"orderable": false
+                },
+                {
+                    "targets": [2],
+                    "searchable": true,
+					"orderable": false
+                },
+                {
+                    "targets": [3],
+                    "searchable": false,
+                    "orderable": false
+                },
+                {
+                    "targets": [4],
+                    "searchable": false,
+                    "orderable": false
+                },
+                {
+                    "targets": [5],
+                    "searchable": false,
+                    "orderable": false
+                },
+                {
+                    "targets": [6],
+                    "searchable": false,
+                    "orderable": false
+                },
+                {
+                    "targets": [7],
+                    "searchable": false,
+                    "orderable": false
+                }
+                ],
+
+            "columns": [
+				{ "data": "ID", "name": "ID", "autoWidth": false },
+				{ "data": "UserName", "name": "UserName", "autoWidth": true },
+				{ "data": "FullName", "name": "FullName", "autoWidth": true },
+				{ "data": "RoleName", "name": "RoleName", "autoWidth": true },
+                { "data": "LocationName", "name": "LocationName", "autoWidth": true },
+				{ "data": "Status", "name": "Status", "autoWidth": true },
+				{ "data": "LastLoginDateStr", "name": "LastLoginDateStr", "autoWidth": true },
+                {
+					"render": function (data, type, full, meta) {
+						return '<a class="btn btn-default" href="/User/Edit?id=' + full.ID + '">@UIResources.Edit</a>  ' +
+							   " | <button class='btn btn-default' onclick='Delete(" + full['ID'] + ")' >@UIResources.Delete</button>";
+					}
+                }
+            ]
+        });
+    });
+	</script>
+}
+

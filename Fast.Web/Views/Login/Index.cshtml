@@ -1,0 +1,58 @@
+﻿@model Fast.Web.Models.UserModel
+
+@{
+	Layout = null;
+}
+<html lang="en">
+<head>
+	<!-- Required meta tags -->
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	<!-- Meta -->
+	<meta name="description" content="PT HMS - Fast Project">
+	<meta name="author" content="ThemePixels">
+	<!-- Favicon -->
+	<link rel="icon" href="~/Content/theme/images/favicon.ico" type="image/x-icon">
+	<title>HMS FAST Login</title>
+	<!-- vendor css -->
+	<link href="~/Content/dashforge/lib/fontawesome-free/css/all.min.css" rel="stylesheet">
+	<link href="~/Content/dashforge/lib/ionicons/css/ionicons.min.css" rel="stylesheet">
+	<!-- DashForge CSS -->
+	<link rel="stylesheet" href="~/Content/dashforge/assets/css/dashforge.css">
+	<link rel="stylesheet" href="~/Content/dashforge/assets/css/dashforge.demo.css">
+</head>
+<body>
+	<div class="modal-dialog modal-dialog-centered wd-sm-400" role="document">
+		<div class="modal-content">
+			<div class="modal-body pd-20 pd-sm-40">
+				@using (Html.BeginForm("SignIn", "Login", FormMethod.Post))
+				{
+					<div>
+						<div style="text-align:center;padding-bottom:10px;">
+							<img class="footer-logo" src="~/Content/theme/images/Footer-Sampoerna.png" alt="" />
+						</div>
+						<div class="form-group">
+							<label>Username</label>
+							@Html.TextBoxFor(x => x.UserName, null, new { @class = "form-control", @id = "tbUserName", @placeholder = "Enter your username", @required = true, @autofocus = true, @tabindex = 1 })
+						</div>
+						<div class="form-group">
+							<div class="d-flex justify-content-between mg-b-5">
+								<label class="mg-b-0-f">Password</label>
+								<a href="" class="tx-13">Forgot password?</a>
+							</div>
+							@Html.TextBoxFor(x => x.Password, null, new { @class = "form-control", @id = "tbPassword", @type = "password", @placeholder = "Enter your password", @required = true, @tabindex = 2 })
+						</div>
+						@if (@ViewBag.Message != null)
+						{
+							<div>
+								<label style="color:red">@ViewBag.Message</label>
+							</div>
+						}
+						<button class="btn btn-primary btn-block" tabindex = 3>Sign In</button>
+					</div>
+				}
+			</div>
+		</div>
+	</div>
+</body>
+</html>

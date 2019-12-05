@@ -1,0 +1,236 @@
+﻿@model Fast.Web.Models.CustomerListModel
+@using Fast.Web.Resources;
+
+@section Styles{
+    <link href="~/Content/dashforge/assets/css/dashforge.css" rel="stylesheet">
+    <link href="~/Content/dashforge/assets/css/dashforge.dashboard.css" rel="stylesheet">
+    <link href="~/Content/fast.css" rel="stylesheet" />
+
+    <style>
+
+    </style>
+}
+
+<header class="navbar navbar-header navbar-header-fixed">
+    <a href="" id="mainMenuOpen" class="burger-menu"><i data-feather="menu"></i></a>
+    <div class="navbar-brand">
+        <a href="@Url.Action("Index", "Home")"><img class="footer-logo" src="~/Content/theme/images/logo.jpg" alt="" /></a>
+    </div><!-- navbar-brand -->
+    <div id="navbarMenu" class="navbar-menu-wrapper">
+        <ul class="nav navbar-menu">
+            <li class="nav-label pd-l-20 pd-lg-l-25 d-lg-none">Main Navigation</li>
+            @{
+                if (Session["UserLogon"] != null && Session["AuthMenu"] != null)
+                {
+                    var authorize_menu = (List<MenuModel>)Session["AuthMenu"];
+                    foreach (var item in authorize_menu)
+                    {
+                        //loop for parent
+                        if (item.IsParent)
+                        {
+                            <li class="nav-item with-sub">
+                                <a href="" class="nav-link"><i data-feather="@item.PageIcon"></i> @item.Name</a>
+                                @if (item.PageSlug.Equals("master"))
+                                {
+                                    <div class="navbar-menu-sub">
+                                        <div class="d-lg-flex">
+                                            <ul>
+                                                @foreach (var child in authorize_menu.Where(x => x.ParentID == item.ID && x.DisplayOrder < 11).OrderBy(x => x.DisplayOrder))
+                                                {
+                                                    if (child.DisplayOrder == 1)
+                                                    {
+                                                        <li class="nav-label">@UIResources.AccessManagement</li>
+                                                    }
+                                                    else if (child.DisplayOrder == 8)
+                                                    {
+                                                        <li class="nav-label mg-t-20">@UIResources.Calendar</li>
+                                                    }
+                                                    <li class="nav-sub-item">
+                                                        <a href="@Url.Action(child.PageAction, child.PageController)" class="nav-sub-link">
+                                                            <i data-feather="@child.PageIcon"></i>@child.Name
+                                                        </a>
+                                                    </li>
+                                                }
+                                            </ul>
+                                            <ul>
+                                                @foreach (var child in authorize_menu.Where(x => x.ParentID == item.ID && x.DisplayOrder > 10).OrderBy(x => x.DisplayOrder))
+                                                {
+                                                    if (child.DisplayOrder == 11)
+                                                    {
+                                                        <li class="nav-label">@UIResources.Others</li>
+                                                    }
+                                                    <li class="nav-sub-item">
+                                                        <a href="@Url.Action(child.PageAction, child.PageController)" class="nav-sub-link">
+                                                            <i data-feather="@child.PageIcon"></i>@child.Name
+                                                        </a>
+                                                    </li>
+                                                }
+                                            </ul>
+                                        </div>
+                                    </div>
+                                }
+                                else if (item.PageSlug.Equals("lphform"))
+                                {
+                                    <div class="navbar-menu-sub">
+                                        <div class="d-lg-flex">
+                                            <ul>
+                                                @foreach (var child in authorize_menu.Where(x => x.ParentID == item.ID && x.DisplayOrder < 11).OrderBy(x => x.DisplayOrder))
+                                                {
+                                                    if (child.DisplayOrder == 1)
+                                                    {
+                                                        <li class="nav-label">Intermediate Line</li>
+                                                    }
+                                                    <li class="nav-sub-item">
+                                                        <a href="@Url.Action(child.PageAction, child.PageController)" class="nav-sub-link">
+                                                            <i data-feather="@child.PageIcon"></i>@child.Name
+                                                        </a>
+                                                    </li>
+                                                }
+                                                <br />
+                                                @foreach (var child in authorize_menu.Where(x => x.ParentID == item.ID && x.DisplayOrder > 20 && x.DisplayOrder < 31).OrderBy(x => x.DisplayOrder))
+                                                {
+                                                    if (child.DisplayOrder == 21)
+                                                    {
+                                                        <li class="nav-label">White Line OTP</li>
+                                                    }
+                                                    <li class="nav-sub-item">
+                                                        <a href="@Url.Action(child.PageAction, child.PageController)" class="nav-sub-link">
+                                                            <i data-feather="@child.PageIcon"></i>@child.Name
+                                                        </a>
+                                                    </li>
+                                                }
+                                            </ul>
+                                            <ul>
+                                                @foreach (var child in authorize_menu.Where(x => x.ParentID == item.ID && x.DisplayOrder > 10 && x.DisplayOrder < 21).OrderBy(x => x.DisplayOrder))
+                                                {
+                                                    if (child.DisplayOrder == 11)
+                                                    {
+                                                        <li class="nav-label">Kretek Line</li>
+                                                    }
+                                                    <li class="nav-sub-item">
+                                                        <a href="@Url.Action(child.PageAction, child.PageController)" class="nav-sub-link">
+                                                            <i data-feather="@child.PageIcon"></i>@child.Name
+                                                        </a>
+                                                    </li>
+                                                }
+                                                <br />
+                                                @foreach (var child in authorize_menu.Where(x => x.ParentID == item.ID && x.DisplayOrder > 30 && x.DisplayOrder < 41).OrderBy(x => x.DisplayOrder))
+                                                {
+                                                    if (child.DisplayOrder == 31)
+                                                    {
+                                                        <li class="nav-label">White Line PMID</li>
+                                                    }
+                                                    <li class="nav-sub-item">
+                                                        <a href="@Url.Action(child.PageAction, child.PageController)" class="nav-sub-link">
+                                                            <i data-feather="@child.PageIcon"></i>@child.Name
+                                                        </a>
+                                                    </li>
+                                                }
+
+                                            </ul>
+                                        </div>
+                                    </div>
+                                }
+                                else if (item.PageSlug.Equals("lphform2"))
+                                {
+                                    <div class="navbar-menu-sub">
+                                        <div class="d-lg-flex">
+                                            <ul>
+                                                @foreach (var child in authorize_menu.Where(x => x.ParentID == item.ID && x.DisplayOrder < 21).OrderBy(x => x.DisplayOrder))
+                                                {
+                                                    if (child.DisplayOrder == 1)
+                                                    {
+                                                        <li class="nav-label">@UIResources.Secondary</li>
+                                                    }
+                                                    <li class="nav-sub-item">
+                                                        <a href="@Url.Action(child.PageAction, child.PageController)" class="nav-sub-link">
+                                                            <i data-feather="@child.PageIcon"></i>@child.Name
+                                                        </a>
+                                                    </li>
+                                                }
+                                            </ul>
+                                        </div>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <ul class="navbar-menu-sub">
+                                        @foreach (var child in authorize_menu.Where(x => x.ParentID == item.ID).OrderBy(x => x.DisplayOrder))
+                                        {
+                                            <li class="nav-sub-item">
+                                                <a href="@Url.Action(child.PageAction, child.PageController)" class="nav-sub-link">
+                                                    <i data-feather="@child.PageIcon"></i>@child.Name
+                                                </a>
+                                            </li>
+                                        }
+                                    </ul>
+                                }
+                            </li>
+                        }
+                        else if (item.IsTopMenu)
+                        {
+                            <li class="nav-item">
+                                <a href="@Url.Action(item.PageAction, item.PageController)" class="nav-link">
+                                    <i data-feather="@item.PageIcon"></i>@item.Name
+                                </a>
+                            </li>
+                        }
+                    }
+                }
+            }
+        </ul>
+    </div><!-- navbar-menu-wrapper -->
+
+    <div class="navbar-right" style="font-size:14px;">
+        <a href="@Url.Action("ChangeToID","Language")">
+            ID&nbsp;
+        </a>
+        <div>&nbsp;|&nbsp;</div>
+        <a href="@Url.Action("ChangeToEN","Language")" style="margin-right:5px">
+            &nbsp;EN&nbsp;&nbsp;
+        </a>
+        <!-- dropdown-link -->
+        @{
+            if (Session["UserLogon"] != null)
+            {
+                UserModel user = (UserModel)Session["UserLogon"];
+                <div style="margin-left:2px;font-size:12px;"> <strong>@user.UserName</strong><br />@user.RoleName<br />@user.Location</div>
+                <div class="dropdown-menu dropdown-menu-right tx-13">
+                    <a href="@Url.Action("SignOut","Login")" class="dropdown-item"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-log-out"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>Sign Out</a>
+                </div><!-- dropdown-menu -->
+            }
+        }
+        <a href="" class="dropdown-link" data-toggle="dropdown" data-display="static">
+            <div class="avatar avatar-sm"><img src="~/Content/theme/images/user.jpg" class="rounded-circle" alt=""></div>
+        </a>
+    </div>
+</header><!-- navbar -->
+<div class="full-screen-preview">
+    @RenderBody()
+</div><!-- content -->
+
+<footer class="footer">
+    <div>
+    </div>
+    <div>
+        <nav class="nav">
+        </nav>
+    </div>
+</footer>
+
+@section Scripts{
+    <script src="~/Content/theme/js/jquery-1.10.0.min.js"></script>
+    <script src="~/Content/dashforge/lib/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="~/Content/dashforge/lib/feather-icons/feather.min.js"></script>
+    <script src="~/Content/dashforge/lib/perfect-scrollbar/perfect-scrollbar.min.js"></script>
+    <script src="~/Content/theme/lib/pnotify/pnotify.custom.js"></script>
+
+    <!-- main js -->
+    <script src="~/Content/dashforge/assets/js/dashforge.js"></script>
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+            
+        });
+    </script>
+}
