@@ -1,5 +1,6 @@
 ﻿@model Fast.Web.Models.CustomerListModel
 @using Fast.Web.Resources;
+@using Newtonsoft.Json;
 
 @section Styles{
     <link href="~/Content/dashforge/assets/css/dashforge.css" rel="stylesheet">
@@ -27,16 +28,89 @@
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDpjc1xdCmFJ6pptU_NVA54Cjpi_kqFaEU&callback=initMap" async defer></script>
 
     <script type="text/javascript">
+        var allcusts = @(Html.Raw((JsonConvert.SerializeObject(Model.Customers)).Replace("\n", "").Replace("\r", "").Replace("\t", "").Replace(" \"", "\"").Replace(" \"", "\"").Replace(" \"", "\"").Replace(" \"", "\"").Replace(" \"", "\"").Replace(" \"", "\"").Replace(" \"", "\"").Replace(" \"", "\"")));
+
+
         var map;
         function initMap() {
-            map = new google.maps.Map(document.getElementById('map'), {
-                center: { lat: -34.397, lng: 150.644 },
-                zoom: 8
-            });
+          var geocoder = new google.maps.Geocoder();
+
+          map = new google.maps.Map(document.getElementById('map'), {
+            center: {lat: 0, lng: 0},
+            zoom: 10
+          });
+
+          geocoder.geocode({'address': "@(Model.Customers[0].dati_II) indonesia"}, function(results, status) {
+            if (status === 'OK') {
+              map.setCenter(results[0].geometry.location);
+            } else {
+              alert('Geocode was not successful for the following reason: ' + status);
+            }
+          });
+
+            for (var i = 0, allcust; allcust = allcusts[i]; i++) {
+                var locat = new google.maps.LatLng(allcust.geographical_x, allcust.geographical_y);
+                marker = new google.maps.Marker({
+                    position: locat,
+                    draggable:true,
+    animation: google.maps.Animation.DROP,
+                    map: map
+                });
+            }
+
+
+            google.maps.event.addListener(marker, 'dragend', function() 
+{
+    geocodePosition(marker.getPosition());
+});
+
+function geocodePosition(pos) 
+{
+   geocoder = new google.maps.Geocoder();
+   geocoder.geocode
+    ({
+        latLng: pos
+    }, 
+        function(results, status) 
+        {
+            if (status == google.maps.GeocoderStatus.OK) 
+            {
+                $("#mapSearchInput").val(results[0].formatted_address);
+                $("#mapErrorMsg").hide(100);
+            } 
+            else 
+            {
+                $("#mapErrorMsg").html('Cannot determine address at this location.'+status).show(100);
+            }
+        }
+    );
+}
+
         }
 
+
+
+
+            /*
+            function addMarker(allcust) {
+                //var icon = mapIcon[allcust.cust_seg_type.toUpperCase().trim().replace(/\W/g, '')+"_"+allcust.cluster.toUpperCase().trim().replace(/\W/g, '')];
+
+                var html = "<div class='leaflet-popup-content-wrapper'><div class='leaflet-popup-content' style='width: 175px;'><div class='popup-content'><h2>"+allcust.customer_code+"</h2><div class='popup-main-content'><span>"+allcust.teritorry+"</span><h3>"+allcust.customer_name+"</h3><p>"+allcust.customer_address+"</p></div><div class='link'><a href='#'>"+allcust.cluster+"</a></div></div></div></div>";
+                var marker = new google.maps.Marker({
+                    position: new google.maps.LatLng(allcust.geographical_x, allcust.geographical_y),
+                    //icon: icon,
+                    map: map,
+                    title: allcust.customer_code,
+                    html: html
+                });
+            }
+
+            for (var i = 0, allcust; allcust = allcusts[i]; i++) {
+                addMarker(allcust);
+            }
+            */
+
         $(document).ready(function () {
-            
         });
     </script>
 }
