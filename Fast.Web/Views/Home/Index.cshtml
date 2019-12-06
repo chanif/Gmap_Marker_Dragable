@@ -31,61 +31,47 @@
         var allcusts = @(Html.Raw((JsonConvert.SerializeObject(Model.Customers)).Replace("\n", "").Replace("\r", "").Replace("\t", "").Replace(" \"", "\"").Replace(" \"", "\"").Replace(" \"", "\"").Replace(" \"", "\"").Replace(" \"", "\"").Replace(" \"", "\"").Replace(" \"", "\"").Replace(" \"", "\"")));
 
 
-        var map;
+        var map; var marker;
+
         function initMap() {
-          var geocoder = new google.maps.Geocoder();
+            var geocoder = new google.maps.Geocoder();
 
-          map = new google.maps.Map(document.getElementById('map'), {
-            center: {lat: 0, lng: 0},
-            zoom: 10
-          });
+            map = new google.maps.Map(document.getElementById('map'), {
+                center: {lat: 0, lng: 0},
+                zoom: 10
+            });
 
-          geocoder.geocode({'address': "@(Model.Customers[0].dati_II) indonesia"}, function(results, status) {
-            if (status === 'OK') {
-              map.setCenter(results[0].geometry.location);
-            } else {
-              alert('Geocode was not successful for the following reason: ' + status);
+            geocoder.geocode({'address': "@(Model.Customers[0].dati_II) indonesia"}, function(results, status) {
+                if (status === 'OK') {
+                    map.setCenter(results[0].geometry.location);
+                } else {
+                    alert('Geocode was not successful for the following reason: ' + status);
+                }
+            });
+
+            function addEventDrop(marker) {
+                google.maps.event.addListener(marker, "dragend", function(event) { 
+                    var lat = event.latLng.lat(); 
+                    var lng = event.latLng.lng(); 
+
+                    console.log(lat + ' , ' + lng);
+                    console.log(marker.get('customer_code'));
+                });
             }
-          });
 
             for (var i = 0, allcust; allcust = allcusts[i]; i++) {
                 var locat = new google.maps.LatLng(allcust.geographical_x, allcust.geographical_y);
                 marker = new google.maps.Marker({
                     position: locat,
                     draggable:true,
-    animation: google.maps.Animation.DROP,
-                    map: map
+                    //animation: google.maps.Animation.DROP,
+                    map: map,
+
+                    customer_code: allcust.customer_code
                 });
+
+                addEventDrop(marker);
             }
-
-
-            google.maps.event.addListener(marker, 'dragend', function() 
-{
-    geocodePosition(marker.getPosition());
-});
-
-function geocodePosition(pos) 
-{
-   geocoder = new google.maps.Geocoder();
-   geocoder.geocode
-    ({
-        latLng: pos
-    }, 
-        function(results, status) 
-        {
-            if (status == google.maps.GeocoderStatus.OK) 
-            {
-                $("#mapSearchInput").val(results[0].formatted_address);
-                $("#mapErrorMsg").hide(100);
-            } 
-            else 
-            {
-                $("#mapErrorMsg").html('Cannot determine address at this location.'+status).show(100);
-            }
-        }
-    );
-}
-
         }
 
 
