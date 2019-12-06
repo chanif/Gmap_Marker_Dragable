@@ -79,7 +79,7 @@
       left: 220px; } }
   @media (min-width: 1200px) {
     .mail-group {
-      width: 320px;
+      width: 0px;
       border-right: 1px solid rgba(72, 94, 144, 0.16); } }
 
 .mail-group-header {
@@ -158,7 +158,7 @@
   background-color: #f5f6fa; }
   @media (min-width: 1200px) {
     .mail-content {
-      left: 540px;
+      left: 220px;
       width: auto;
       right: 0; } }
 

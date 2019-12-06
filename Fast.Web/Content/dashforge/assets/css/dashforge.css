@@ -2257,7 +2257,7 @@ pre {
     color: #7987a1;
     opacity: 1; }
   .form-control:disabled, .form-control[readonly] {
-    background-color: #e3e7ed;
+    background-color: #e8e8e8;
     opacity: 1; }
 
 select.form-control:focus::-ms-value {
@@ -2381,7 +2381,7 @@ textarea.form-control {
   max-width: 100%;
   padding: 0.25rem 0.5rem;
   margin-top: .1rem;
-  font-size: 0.76562rem;
+  font-size: 0.76563rem;
   line-height: 1.5;
   color: #fff;
   background-color: rgba(16, 183, 89, 0.9);
@@ -2478,7 +2478,7 @@ textarea.form-control {
   max-width: 100%;
   padding: 0.25rem 0.5rem;
   margin-top: .1rem;
-  font-size: 0.76562rem;
+  font-size: 0.76563rem;
   line-height: 1.5;
   color: #fff;
   background-color: rgba(220, 53, 69, 0.9);
@@ -3239,7 +3239,7 @@ input[type="button"].btn-block {
   display: block;
   padding: 0.5rem 1.5rem;
   margin-bottom: 0;
-  font-size: 0.76562rem;
+  font-size: 0.76563rem;
   color: #7987a1;
   white-space: nowrap; }
 
@@ -3302,8 +3302,8 @@ input[type="button"].btn-block {
   border-bottom-left-radius: 0; }
 
 .dropdown-toggle-split {
-  padding-right: 0.70312rem;
-  padding-left: 0.70312rem; }
+  padding-right: 0.70313rem;
+  padding-left: 0.70313rem; }
   .dropdown-toggle-split::after,
   .dropup .dropdown-toggle-split::after,
   .dropright .dropdown-toggle-split::after {
@@ -4470,7 +4470,7 @@ input[type="button"].btn-block {
 
 .pagination-sm .page-link {
   padding: 0.25rem 0.5rem;
-  font-size: 0.76562rem;
+  font-size: 0.76563rem;
   line-height: 1.5; }
 
 .pagination-sm .page-item:first-child .page-link {
@@ -5190,7 +5190,7 @@ a.close.disabled {
   word-spacing: normal;
   white-space: normal;
   line-break: auto;
-  font-size: 0.76562rem;
+  font-size: 0.76563rem;
   word-wrap: break-word;
   opacity: 0; }
   .tooltip.show {
@@ -5275,7 +5275,7 @@ a.close.disabled {
   word-spacing: normal;
   white-space: normal;
   line-break: auto;
-  font-size: 0.76562rem;
+  font-size: 0.76563rem;
   word-wrap: break-word;
   background-color: #fff;
   background-clip: padding-box;
@@ -5585,12 +5585,15 @@ a.close.disabled {
   vertical-align: text-top !important; }
 
 .bg-primary {
-  background-color: #0168fa !important; }
+    /*background-color: #0168fa !important;*/
+    background-color: #349cfb !important;
+}
 
 a.bg-primary:hover, a.bg-primary:focus,
 button.bg-primary:hover,
 button.bg-primary:focus {
-  background-color: #0153c7 !important; }
+    background-color: #0153c7 !important;
+}
 
 .bg-secondary {
   background-color: #7987a1 !important; }
@@ -8440,7 +8443,7 @@ strong {
   .form-control::placeholder {
     color: #c0ccda; }
   .form-control:disabled, .form-control[readonly] {
-    background-color: #f5f6fa; }
+    background-color: #e8e8e8; }
 
 textarea.form-control {
   min-height: 38px; }
@@ -9132,7 +9135,9 @@ textarea.form-control {
   background-color: #ffc107; }
 
 .thead-info {
-  background-color: #00b8d4; }
+    /*background-color: #409fff;*/
+    background-color: #066fcb;
+}
 
 .thead-dark {
   background-color: #3b4863; }
@@ -12951,7 +12956,7 @@ textarea.parsley-success:focus {
     font-size: 10px;
     font-weight: 600;
     font-family: -apple-system, BlinkMacSystemFont, "Inter UI", Roboto, sans-serif;
-    letter-spacing: .7px;
+    letter-spacing: .4px;
     color: #8392a5;
     text-transform: uppercase;
     display: block;
@@ -13994,6 +13999,64 @@ textarea.parsley-success:focus {
   display: block;
   text-align: center;
   color: #8392a5; }
+
+/* ############### FAST SPECIAL STYLES ############### */
+.lph .select2-container--default .select2-selection--single {
+  height: 25px; }
+  .lph .select2-container--default .select2-selection--single .select2-selection__arrow {
+    height: 25px; }
+
+.lph .select2-container--default .select2-search--dropdown .select2-search__field {
+  padding: 3px 10px; }
+
+.lph .select2-container--open {
+  font-size: 13px; }
+
+.lph .select2-results__option {
+  padding: 4px 10px; }
+
+.lph-form {
+  min-width: 1290px !important; }
+  .lph-form .card-header {
+    padding: 5px 15px; }
+    @media (min-width: 576px) {
+      .lph-form .card-header {
+        padding: 5px 20px; } }
+  .lph-form .card-body {
+    padding: 15px 15px 10px; }
+    @media (min-width: 576px) {
+      .lph-form .card-body {
+        padding: 15px 20px 10px; } }
+  .lph-form .form-control {
+    font-size: 13px;
+    height: 25px;
+    padding: 3px 5px; }
+  .lph-form textarea.form-control {
+    min-height: 38px; }
+  .lph-form .form-group {
+    margin-bottom: 5px; }
+    .lph-form .form-group .col-1, .lph-form .form-group .col-2, .lph-form .form-group .col-3, .lph-form .form-group .col-4, .lph-form .form-group .col-5, .lph-form .form-group .col-6, .lph-form .form-group .col-7, .lph-form .form-group .col-8, .lph-form .form-group .col-9, .lph-form .form-group .col-10, .lph-form .form-group .col-11, .lph-form .form-group .col-12, .lph-form .form-group .col, .lph-form .form-group .col-auto {
+      padding: 0 10px; }
+    .lph-form .form-group .col-form-label {
+      font-size: 13px;
+      padding-top: 4px; }
+  .lph-form .input-group-text {
+    padding: 2px 5px 0 5px; }
+  .lph-form .table th, .lph-form .table td {
+    padding: 4px 10px;
+    line-height: 1.5;
+    vertical-align: middle; }
+  .lph-form .btn-xs {
+    font-size: 11px;
+    padding-top: 3px;
+    padding-bottom: 3px;
+    width: 90px; }
+  .lph-form .divider-vertical {
+    margin: 0 20px; }
+    .lph-form .divider-vertical:before {
+      margin-bottom: 0; }
+    .lph-form .divider-vertical:after {
+      margin-top: 0; }
 
 /* ############### UTILITIES/HELPER CLASSES ############### */
 /* ###### 9.1 Background  ###### */
@@ -41044,3 +41107,5 @@ a.bg-twitter:hover, a.bg-twitter:focus, button.bg-twitter:hover, button.bg-twitt
 
 .wd-280 {
   width: 280px; }
+
+/*# sourceMappingURL=dashforge.css.map */

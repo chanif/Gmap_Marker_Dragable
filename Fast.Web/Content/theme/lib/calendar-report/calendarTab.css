@@ -1,0 +1,67 @@
+﻿.cal table {
+    border-collapse: collapse;
+    border: 1px solid black;
+}
+
+.cal tr, .cal thead {
+    display: block;
+    float: left;
+}
+
+.cal th, .cal td {
+    display: block;
+    height: 12px;
+}
+
+.cal tbody {
+    display: block;
+}
+
+.cal td:first-child {
+    background-color: #78ee16 !important;
+    height: 10px;
+    font-size: 6px;
+}
+
+.cal td {
+    height: 10px;
+    width: 2px;
+}
+
+h5 {
+    background-color: #0094ff;
+    color: white;
+}
+td:first-child {
+    background-color: #ff6a00 !important;    
+}
+.yellowLabel{
+    background-color:yellow;
+}
+.greenLabel {
+    background-color: forestgreen;
+}
+.redLabel {
+    background-color: red;
+}
+.brownLabel {
+    background-color: brown;
+}
+.blueLabel {
+    background-color:lightskyblue;
+}
+.purpleLabel {
+    background-color: #fa55e6;
+}
+.peachLabel {
+    background-color: #ffda4d;
+}
+.lightYellowLabel {
+    background-color: #fdffb1;
+}
+.whiteLabel {
+    background-color: #ffffff;
+    border: 1px solid black;
+}
+
+

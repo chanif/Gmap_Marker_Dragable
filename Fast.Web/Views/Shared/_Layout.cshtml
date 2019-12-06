@@ -11,7 +11,20 @@
     @RenderSection("Styles", required: false)
 </head>
 <body>
+    <header class="navbar navbar-header navbar-header-fixed">
+        <div class="navbar-brand">
+            <a href="#" class="df-logo">Field<span>IQ</span></a>
+        </div><!-- navbar-brand -->
+    </header><!-- navbar -->
+
     @RenderBody()
+
+    <footer class="footer">
+        <div>
+            <span>© 2019 GBU.co.id </span>
+        </div>
+    </footer>
+
     @RenderSection("Scripts", required: false)
 </body>
 </html>
