@@ -33,6 +33,7 @@ namespace Fast.Web.Controllers
             string customers = _customerAppService.Find(filters);
             //string customers = _customerAppService.GetAll();
             model.Customers = string.IsNullOrEmpty(customers) ? new List<CustomerModel>() : JsonConvert.DeserializeObject<List<CustomerModel>>(customers);
+            model.Customers = model.Customers.OrderBy(x => x.dati_II).ToList();
 
             return View(model);
         }

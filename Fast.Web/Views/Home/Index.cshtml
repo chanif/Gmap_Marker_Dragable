@@ -2,6 +2,10 @@
 @using Fast.Web.Resources;
 @using Newtonsoft.Json;
 
+@{ 
+    var districts = Model.Customers.Select(x => x.dati_II).Distinct().ToList();
+}
+
 @section Styles{
     <link href="~/Content/dashforge/assets/css/dashforge.css" rel="stylesheet">
 
@@ -49,6 +53,7 @@
                 }
             });
 
+            /*
             function addEventDrop(marker) {
                 google.maps.event.addListener(marker, "dragend", function(event) { 
                     var lat = event.latLng.lat(); 
@@ -71,6 +76,11 @@
                 });
 
                 addEventDrop(marker);
+            }
+            */
+
+            map.data.loadGeoJson(
+                  'https://storage.googleapis.com/mapsdevsite/json/google.json');
             }
         }
 
