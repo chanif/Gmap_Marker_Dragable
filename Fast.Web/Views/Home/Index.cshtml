@@ -2,8 +2,8 @@
 @using Fast.Web.Resources;
 @using Newtonsoft.Json;
 
-@{ 
-    var districts = Model.Customers.Select(x => x.dati_II).Distinct().ToList();
+@{
+    var territories = Model.Customers.Select(x => x.teritorry).Distinct().ToList();
 }
 
 @section Styles{
@@ -20,7 +20,17 @@
                 <div class="col-10">
                     <div id="map" style="min-height:600px"></div>
                 </div>
-                <div class="col-2"></div>
+                <div class="col-2">
+                    <hr>
+                    <br>
+                    Use Ctrl+click to select multiple markers, or
+                    click some point to draw shape around markers to select them.
+                    <br><br>
+                    Selected markers:
+                    <input id="selected_markers"><br>
+                    <input type="button" onclick="clearSelection()" value="Clear polygon"><br>
+
+                </div>
             </div>
         </div>
     </div><!-- container -->
@@ -29,10 +39,11 @@
 @section Scripts{
     <script src="~/Content/theme/js/jquery-1.10.0.min.js"></script>
     <script src="~/Content/dashforge/lib/bootstrap/js/bootstrap.bundle.min.js"></script>
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDpjc1xdCmFJ6pptU_NVA54Cjpi_kqFaEU&callback=initMap" async defer></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDpjc1xdCmFJ6pptU_NVA54Cjpi_kqFaEU&libraries=geometry"></script>
 
     <script type="text/javascript">
         var allcusts = @(Html.Raw((JsonConvert.SerializeObject(Model.Customers)).Replace("\n", "").Replace("\r", "").Replace("\t", "").Replace(" \"", "\"").Replace(" \"", "\"").Replace(" \"", "\"").Replace(" \"", "\"").Replace(" \"", "\"").Replace(" \"", "\"").Replace(" \"", "\"").Replace(" \"", "\"")));
+        var allterritories = @(Html.Raw((JsonConvert.SerializeObject(territories)).Replace("\n", "").Replace("\r", "").Replace("\t", "").Replace(" \"", "\"").Replace(" \"", "\"").Replace(" \"", "\"").Replace(" \"", "\"").Replace(" \"", "\"").Replace(" \"", "\"").Replace(" \"", "\"").Replace(" \"", "\"")));
 
 
         var map; var marker;
@@ -53,14 +64,23 @@
                 }
             });
 
-            /*
+            var markers = [];
+
+
             function addEventDrop(marker) {
-                google.maps.event.addListener(marker, "dragend", function(event) { 
-                    var lat = event.latLng.lat(); 
-                    var lng = event.latLng.lng(); 
+                google.maps.event.addListener(marker, "dragend", function(event) {
+                    var lat = event.latLng.lat();
+                    var lng = event.latLng.lng();
 
                     console.log(lat + ' , ' + lng);
                     console.log(marker.get('customer_code'));
+                    console.log(markers);
+                });
+
+                google.maps.event.addListener(marker, "click", function(event) {
+                    if (event.ctrlKey) {
+                        markers.push(marker.get('customer_code'));
+                    }
                 });
             }
 
@@ -77,34 +97,156 @@
 
                 addEventDrop(marker);
             }
-            */
-
-            map.data.loadGeoJson(
-                  'https://storage.googleapis.com/mapsdevsite/json/google.json');
-            }
-        }
-
 
 
 
             /*
-            function addMarker(allcust) {
-                //var icon = mapIcon[allcust.cust_seg_type.toUpperCase().trim().replace(/\W/g, '')+"_"+allcust.cluster.toUpperCase().trim().replace(/\W/g, '')];
+            for (var i = 0, district; district = alldists[i]; i++) {
+                console.log(district);
+                map.data.loadGeoJson('/Files/geojson/_02Kab/'+district.replace(/\s+/g, '')+'.geojson');
+            }
+            */
 
-                var html = "<div class='leaflet-popup-content-wrapper'><div class='leaflet-popup-content' style='width: 175px;'><div class='popup-content'><h2>"+allcust.customer_code+"</h2><div class='popup-main-content'><span>"+allcust.teritorry+"</span><h3>"+allcust.customer_name+"</h3><p>"+allcust.customer_address+"</p></div><div class='link'><a href='#'>"+allcust.cluster+"</a></div></div></div></div>";
-                var marker = new google.maps.Marker({
-                    position: new google.maps.LatLng(allcust.geographical_x, allcust.geographical_y),
-                    //icon: icon,
-                    map: map,
-                    title: allcust.customer_code,
-                    html: html
+        }
+
+
+
+        var map;
+        var markers = [];
+        var polygon;
+        var polygonMarkers = [];
+        var polygonLocations = [];
+        var geocoder = new google.maps.Geocoder();
+        var icons = ["mm_20_gray",
+            "mm_20_green",
+            "mm_20_orange",
+            "mm_20_purple",
+            "mm_20_red",
+            "mm_20_white",
+            "mm_20_yellow",
+            "mm_20_blue",
+            "mm_20_brown",
+            "mm_20_black"];
+
+        function initialize() {
+            map = new google.maps.Map(document.getElementById('map'), {
+                center: {lat: 0, lng: 0},
+                zoom: 10,
+                mapTypeId: google.maps.MapTypeId.ROADMAP
+            });
+
+            geocoder.geocode({'address': "@(Model.Customers[0].dati_II) indonesia"}, function(results, status) {
+                if (status === 'OK') {
+                    map.setCenter(results[0].geometry.location);
+                } else {
+                    alert('Geocode was not successful for the following reason: ' + status);
+                }
+            });
+
+
+            function addEventDrop(marker) {
+                google.maps.event.addListener(marker, "dragend", function(event) {
+                    var lat = event.latLng.lat();
+                    var lng = event.latLng.lng();
+
+                    console.log(lat + ' , ' + lng);
+                    console.log(marker.get('customer_code'));
+                    console.log(markers);
+                });
+
+                google.maps.event.addListener(marker, "click", function(event) {
+                    if (event.ctrlKey) {
+                        markers.push(marker.get('customer_code'));
+                    }
                 });
             }
 
+            var counter = -1;
+            var last_territory = 0;
             for (var i = 0, allcust; allcust = allcusts[i]; i++) {
-                addMarker(allcust);
+                if (last_territory != allcust.territory) {
+                    counter++;
+                    last_territory = allcust.territory;
+                }
+
+                var locat = new google.maps.LatLng(allcust.geographical_x, allcust.geographical_y);
+                allcusts[i].koordinat = locat;
+                marker = new google.maps.Marker({
+                    position: locat,
+                    draggable: true,
+                    icon: "http://labs.google.com/ridefinder/images/"+icons[counter]+".png",
+                    //animation: google.maps.Animation.DROP,
+                    map: map,
+                    customer_code: allcust.customer_code
+                });
+
+                addEventDrop(marker);
             }
-            */
+
+            // add a click on map event
+            google.maps.event.addListener(map, 'click', function (e) {
+                // set a marker there, with a small measle icon
+                var position = e.latLng;
+                polygonLocations.push(position);
+                polygonMarkers.push(new google.maps.Marker({
+                    icon: 'https://maps.gstatic.com/intl/en_ALL/mapfiles/markers2/measle.png',
+                    position: position,
+                    map: map
+                }));
+                // now let's add a polygon
+                drawPolygon(polygonLocations);
+            });
+        }
+
+        // draws a polygon
+        function drawPolygon(points) {
+            if (points.length < 3) {
+                return;
+            }
+            // first delete the previous polygon
+            if (polygon) {
+                polygon.setMap(null);
+            }
+
+            polygon = new google.maps.Polygon({
+                paths: points,
+                strokeColor: '#FF0000',
+                strokeOpacity: 0.8,
+                strokeWeight: 2,
+                fillColor: '#FF0000',
+                fillOpacity: 0.35,
+                map: map
+            });
+            // display to input
+            displaySelectedMarkers(polygon);
+        }
+
+        // display the selected markers to input.
+        function displaySelectedMarkers(polygon) {
+            // empty the input
+            document.getElementById('selected_markers').value = '';
+            var a = 0;  // I use this to set a comma between the values, but no comma at the end
+
+            for (var i = 0, allcust; allcust = allcusts[i]; i++) {
+
+                if (google.maps.geometry.poly.containsLocation(allcust.koordinat, polygon)) {
+                    document.getElementById('selected_markers').value += (a++ > 0 ? ', ' : '') + allcust.customer_code;
+                }
+            }
+        }
+
+        function clearSelection() {
+            if (polygon) {
+                polygon.setMap(null);
+            }
+            for (var i in polygonMarkers) {
+                polygonMarkers[i].setMap(null);
+            }
+            polygonLocations = [];
+            document.getElementById('selected_markers').value = '';
+        }
+
+        google.maps.event.addDomListener(window, 'load', initialize);
 
         $(document).ready(function () {
         });
