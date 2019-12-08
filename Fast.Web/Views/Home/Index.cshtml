@@ -28,7 +28,7 @@
                     <br><br>
                     Selected markers:
                     <input id="selected_markers"><br>
-                    <input type="button" onclick="clearSelection()" value="Clear polygon"><br>
+                    <input type="button" onclick="clearSelection()" value="Clear selection"><br>
 
                 </div>
             </div>
@@ -45,96 +45,38 @@
         var allcusts = @(Html.Raw((JsonConvert.SerializeObject(Model.Customers)).Replace("\n", "").Replace("\r", "").Replace("\t", "").Replace(" \"", "\"").Replace(" \"", "\"").Replace(" \"", "\"").Replace(" \"", "\"").Replace(" \"", "\"").Replace(" \"", "\"").Replace(" \"", "\"").Replace(" \"", "\"")));
         var allterritories = @(Html.Raw((JsonConvert.SerializeObject(territories)).Replace("\n", "").Replace("\r", "").Replace("\t", "").Replace(" \"", "\"").Replace(" \"", "\"").Replace(" \"", "\"").Replace(" \"", "\"").Replace(" \"", "\"").Replace(" \"", "\"").Replace(" \"", "\"").Replace(" \"", "\"")));
 
-
-        var map; var marker;
-
-        function initMap() {
-            var geocoder = new google.maps.Geocoder();
-
-            map = new google.maps.Map(document.getElementById('map'), {
-                center: {lat: 0, lng: 0},
-                zoom: 10
-            });
-
-            geocoder.geocode({'address': "@(Model.Customers[0].dati_II) indonesia"}, function(results, status) {
-                if (status === 'OK') {
-                    map.setCenter(results[0].geometry.location);
-                } else {
-                    alert('Geocode was not successful for the following reason: ' + status);
-                }
-            });
-
-            var markers = [];
-
-
-            function addEventDrop(marker) {
-                google.maps.event.addListener(marker, "dragend", function(event) {
-                    var lat = event.latLng.lat();
-                    var lng = event.latLng.lng();
-
-                    console.log(lat + ' , ' + lng);
-                    console.log(marker.get('customer_code'));
-                    console.log(markers);
-                });
-
-                google.maps.event.addListener(marker, "click", function(event) {
-                    if (event.ctrlKey) {
-                        markers.push(marker.get('customer_code'));
-                    }
-                });
-            }
-
-            for (var i = 0, allcust; allcust = allcusts[i]; i++) {
-                var locat = new google.maps.LatLng(allcust.geographical_x, allcust.geographical_y);
-                marker = new google.maps.Marker({
-                    position: locat,
-                    draggable:true,
-                    //animation: google.maps.Animation.DROP,
-                    map: map,
-
-                    customer_code: allcust.customer_code
-                });
-
-                addEventDrop(marker);
-            }
-
-
-
-            /*
-            for (var i = 0, district; district = alldists[i]; i++) {
-                console.log(district);
-                map.data.loadGeoJson('/Files/geojson/_02Kab/'+district.replace(/\s+/g, '')+'.geojson');
-            }
-            */
-
-        }
-
-
+        console.log(allterritories);
 
         var map;
         var markers = [];
+        var markerselected = [];
         var polygon;
         var polygonMarkers = [];
         var polygonLocations = [];
         var geocoder = new google.maps.Geocoder();
+        var infoWindow;
         var icons = ["mm_20_gray",
             "mm_20_green",
             "mm_20_orange",
             "mm_20_purple",
             "mm_20_red",
-            "mm_20_white",
             "mm_20_yellow",
             "mm_20_blue",
             "mm_20_brown",
             "mm_20_black"];
 
+        var icon_selected = "mm_20_white";
+
         function initialize() {
+            //******************************************************************************************** INIT GMAP
             map = new google.maps.Map(document.getElementById('map'), {
                 center: {lat: 0, lng: 0},
-                zoom: 10,
+                zoom: 13,
                 mapTypeId: google.maps.MapTypeId.ROADMAP
             });
+            infoWindow = new google.maps.InfoWindow();
 
+            //******************************************************************************************** SET CENTER OF THE MAP
             geocoder.geocode({'address': "@(Model.Customers[0].dati_II) indonesia"}, function(results, status) {
                 if (status === 'OK') {
                     map.setCenter(results[0].geometry.location);
@@ -143,47 +85,84 @@
                 }
             });
 
-
-            function addEventDrop(marker) {
-                google.maps.event.addListener(marker, "dragend", function(event) {
+            function addMarkerEvent(marker, info) {
+                //******************************************************************************************** KETIKA MARKER DROP
+                google.maps.event.addListener(marker, "dragend", function (event) {
                     var lat = event.latLng.lat();
                     var lng = event.latLng.lng();
 
                     console.log(lat + ' , ' + lng);
                     console.log(marker.get('customer_code'));
-                    console.log(markers);
-                });
 
-                google.maps.event.addListener(marker, "click", function(event) {
-                    if (event.ctrlKey) {
-                        markers.push(marker.get('customer_code'));
+                    for (var i = 0, allcust; allcust = allcusts[i]; i++) {
+                        if (allcust.customer_code == marker.get('customer_code')) {
+                            var locat = new google.maps.LatLng(lat, lng);
+                            allcusts[i].koordinat = locat;
+                        }
                     }
+
+                });
+
+                //******************************************************************************************** KETIKA MARKER CLICKED
+                google.maps.event.addListener(marker, "click", function (event) {
+                    if (event.ctrlKey) {
+                        marker.setIcon("http://labs.google.com/ridefinder/images/" + icon_selected + ".png");
+
+                        var a = 0;
+                        if (document.getElementById('selected_markers').value = '') {
+                            a = 1;
+                        }
+                        document.getElementById('selected_markers').value += (a++ > 0 ? ', ' : '') + marker.get('customer_code');
+
+                    } else {
+                        clearSelection();
+
+                        marker.setIcon("http://labs.google.com/ridefinder/images/" + icon_selected + ".png");
+
+                        document.getElementById('selected_markers').value = marker.get('customer_code');
+
+
+                    }
+
+                    markerselected.push(marker);
+
+                    infoWindow.setContent(info);
+                    infoWindow.open(map, marker);
                 });
             }
 
-            var counter = -1;
-            var last_territory = 0;
-            for (var i = 0, allcust; allcust = allcusts[i]; i++) {
-                if (last_territory != allcust.territory) {
-                    counter++;
-                    last_territory = allcust.territory;
+            //******************************************************************************************** GAMBAR MARKER
+            function initmarker() {
+                var counter = -1;
+                var last_territory = 0;
+                for (var i = 0, allcust; allcust = allcusts[i]; i++) {
+                    if (last_territory != allcust.teritorry) {
+                        counter++;
+                        console.log(last_territory);
+                        last_territory = allcust.teritorry;
+                    }
+
+                    var locat = new google.maps.LatLng(allcust.geographical_x, allcust.geographical_y);
+                    allcusts[i].koordinat = locat;
+                    marker = new google.maps.Marker({
+                        position: locat,
+                        draggable: true,
+                        icon: "http://labs.google.com/ridefinder/images/" + icons[counter] + ".png",
+                        //animation: google.maps.Animation.DROP,
+                        map: map,
+                        customer_code: allcust.customer_code,
+                        default_icon: "http://labs.google.com/ridefinder/images/" + icons[counter] + ".png",
+                        title: allcust.customer_code + " (" + allcust.teritorry + ")"
+                    });
+
+                    addMarkerEvent(marker, '<b>' + allcust.customer_code + '</b><br>' + allcust.customer_name + '<br>' + allcust.customer_address + '<br>' + allcust.teritorry);
+                    markers[allcust.customer_code] = marker;
                 }
-
-                var locat = new google.maps.LatLng(allcust.geographical_x, allcust.geographical_y);
-                allcusts[i].koordinat = locat;
-                marker = new google.maps.Marker({
-                    position: locat,
-                    draggable: true,
-                    icon: "http://labs.google.com/ridefinder/images/"+icons[counter]+".png",
-                    //animation: google.maps.Animation.DROP,
-                    map: map,
-                    customer_code: allcust.customer_code
-                });
-
-                addEventDrop(marker);
             }
+            initmarker();
+            
 
-            // add a click on map event
+            //******************************************************************************************** GAMBAR POLYGON UNTUK SELECTION
             google.maps.event.addListener(map, 'click', function (e) {
                 // set a marker there, with a small measle icon
                 var position = e.latLng;
@@ -243,12 +222,21 @@
                 polygonMarkers[i].setMap(null);
             }
             polygonLocations = [];
+
+            console.log("marker selected:");
+            console.log(markerselected);
+            if (markerselected.length > 0) {
+                for (var i = 0, mark; mark = markerselected[i]; i++) {
+                    mark.setIcon(mark.get('default_icon'));
+                }
+            }
+
             document.getElementById('selected_markers').value = '';
         }
 
-        google.maps.event.addDomListener(window, 'load', initialize);
-
+        
         $(document).ready(function () {
+            google.maps.event.addDomListener(window, 'load', initialize);
         });
     </script>
 }
