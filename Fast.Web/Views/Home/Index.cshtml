@@ -4,6 +4,17 @@
 
 @{
     var territories = Model.Customers.Select(x => x.teritorry).Distinct().ToList();
+    var counter = 1;
+    Dictionary<string, string> colors = new Dictionary<string,string>();
+    colors.Add("color1", "ed53ed");
+    colors.Add("color2", "f2f261");
+    colors.Add("color3", "5959ff");
+    colors.Add("color4", "62d962");
+    colors.Add("color5", "ff4050");
+    colors.Add("color6", "f5c60c");
+    colors.Add("color7", "c1c1c1");
+    colors.Add("color8", "cca166");
+    colors.Add("color9", "000000");
 }
 
 @section Styles{
@@ -14,22 +25,36 @@
 }
 
 <div class="content content-fixed content-auth-alt pd-0-f">
-    <div class="container-fluid ht-100p tx-center pd-0-f">
+    <div class="container-fluid ht-100p pd-0-f">
         <div class="ht-100p d-flex flex-column">
             <div class="row">
                 <div class="col-10">
                     <div id="map" style="min-height:600px"></div>
                 </div>
                 <div class="col-2">
-                    <hr>
                     <br>
                     Use Ctrl+click to select multiple markers, or
                     click some point to draw shape around markers to select them.
                     <br><br>
-                    Selected markers:
-                    <input id="selected_markers"><br>
-                    <input type="button" onclick="clearSelection()" value="Clear selection"><br>
 
+                    Selected markers:
+                    <div class="form-group">
+                        <textarea id="selected_markers" class="form-control" rows="3"></textarea>
+                    </div>
+
+                    Place to territory:
+                    @foreach (var teri in territories)
+                    {
+                        <div class="custom-control custom-radio" style="background-color: #@(colors["color"+counter++]);padding: 5px 2rem;">
+                            <input type="radio" id="customRadio@(teri)" name="customRadio" class="custom-control-input">
+                            <label class="custom-control-label" for="customRadio@(teri)">@teri</label>
+                        </div>
+                    }
+
+                    <div class="row pd-20">
+                        <button type="button" class="btn btn-danger col-6" onclick="clearSelection()">Reset</button>
+                        <button type="button" class="btn btn-primary col-6" onclick="applySelection()">Apply</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -50,22 +75,30 @@
         var map;
         var markers = [];
         var markerselected = [];
+        var selecting = false;
         var polygon;
         var polygonMarkers = [];
         var polygonLocations = [];
         var geocoder = new google.maps.Geocoder();
         var infoWindow;
-        var icons = ["mm_20_gray",
-            "mm_20_green",
-            "mm_20_orange",
-            "mm_20_purple",
-            "mm_20_red",
+        var icons = ["mm_20_purple",
             "mm_20_yellow",
             "mm_20_blue",
+            "mm_20_green",
+            "mm_20_red",
+            "mm_20_orange",
+            "mm_20_gray",
             "mm_20_brown",
             "mm_20_black"];
 
         var icon_selected = "mm_20_white";
+
+        window.onkeydown = function(e) {
+            selecting = ((e.keyIdentifier == 'Control') || (e.ctrlKey == true));
+        }
+        window.onkeyup = function(e) {
+            selecting = false;
+        }
 
         function initialize() {
             //******************************************************************************************** INIT GMAP
@@ -77,7 +110,7 @@
             infoWindow = new google.maps.InfoWindow();
 
             //******************************************************************************************** SET CENTER OF THE MAP
-            geocoder.geocode({'address': "@(Model.Customers[0].dati_II) indonesia"}, function(results, status) {
+            geocoder.geocode({'address': "@(Model.Customers[0].kecamatan + " " + Model.Customers[0].dati_II) indonesia"}, function(results, status) {
                 if (status === 'OK') {
                     map.setCenter(results[0].geometry.location);
                 } else {
@@ -104,27 +137,29 @@
                 });
 
                 //******************************************************************************************** KETIKA MARKER CLICKED
-                google.maps.event.addListener(marker, "click", function (event) {
-                    if (event.ctrlKey) {
+                google.maps.event.addListener(marker, "click", function (e) {
+                    if (selecting) {
                         marker.setIcon("http://labs.google.com/ridefinder/images/" + icon_selected + ".png");
+                        markerselected.push(marker);
 
-                        var a = 0;
-                        if (document.getElementById('selected_markers').value = '') {
-                            a = 1;
+                        var a = 260891;
+                        if (document.getElementById('selected_markers').value == '') {
+                            a = 0;
                         }
-                        document.getElementById('selected_markers').value += (a++ > 0 ? ', ' : '') + marker.get('customer_code');
+
+                        console.log(a);
+
+                        document.getElementById('selected_markers').value += (a > 0 ? ', ' : '') + marker.get('customer_code');
 
                     } else {
                         clearSelection();
-
+                        markerselected.push(marker);
                         marker.setIcon("http://labs.google.com/ridefinder/images/" + icon_selected + ".png");
-
                         document.getElementById('selected_markers').value = marker.get('customer_code');
-
-
                     }
 
-                    markerselected.push(marker);
+                    
+                    console.log(markerselected);
 
                     infoWindow.setContent(info);
                     infoWindow.open(map, marker);
@@ -230,6 +265,7 @@
                     mark.setIcon(mark.get('default_icon'));
                 }
             }
+            markerselected = [];
 
             document.getElementById('selected_markers').value = '';
         }
