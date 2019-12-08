@@ -45,9 +45,9 @@
                     Place to territory:
                     @foreach (var teri in territories)
                     {
-                        <div class="custom-control custom-radio" style="background-color: #@(colors["color"+counter++]);padding: 5px 2rem;">
-                            <input type="radio" id="customRadio@(teri)" name="customRadio" class="custom-control-input">
-                            <label class="custom-control-label" for="customRadio@(teri)">@teri</label>
+                        <div class="custom-control custom-radio" style="background-color: #@(colors["color"+counter]);padding: 5px 2rem;">
+                            <input type="radio" name="territory" id="@(teri)" value="@(counter++)" class="custom-control-input">
+                            <label class="custom-control-label" for="@(teri)">@teri</label>
                         </div>
                     }
 
@@ -268,6 +268,28 @@
             markerselected = [];
 
             document.getElementById('selected_markers').value = '';
+        }
+
+        function applySelection() {
+            var radioValue = $("input[name='territory']:checked").val();
+            radioValue = radioValue - 1;
+            var radioID = $("input[name='territory']:checked").attr('id');
+
+            console.log(radioValue);
+            console.log(radioID);
+
+            if (radioID === undefined) {
+                alert("Please select territory above!");
+            } else {
+                if (markerselected.length > 0) {
+                    for (var i = 0, mark; mark = markerselected[i]; i++) {
+                        //mark.setIcon("http://labs.google.com/ridefinder/images/" + icons[radioValue] + ".png");
+                        mark.default_icon = "http://labs.google.com/ridefinder/images/" + icons[radioValue] + ".png";
+                    }
+                }
+            }
+
+            clearSelection();
         }
 
         
