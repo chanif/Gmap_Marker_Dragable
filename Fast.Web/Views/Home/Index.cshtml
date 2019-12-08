@@ -29,7 +29,7 @@
         <div class="ht-100p d-flex flex-column">
             <div class="row">
                 <div class="col-10">
-                    <div id="map" style="min-height:600px"></div>
+                    <div id="map" style="min-height:500px"></div>
                 </div>
                 <div class="col-2">
                     <br>
@@ -146,9 +146,6 @@
                         if (document.getElementById('selected_markers').value == '') {
                             a = 0;
                         }
-
-                        console.log(a);
-
                         document.getElementById('selected_markers').value += (a > 0 ? ', ' : '') + marker.get('customer_code');
 
                     } else {
@@ -237,14 +234,17 @@
 
         // display the selected markers to input.
         function displaySelectedMarkers(polygon) {
-            // empty the input
-            document.getElementById('selected_markers').value = '';
-            var a = 0;  // I use this to set a comma between the values, but no comma at the end
+            var a = 260891;
+            if (document.getElementById('selected_markers').value == '') {
+                a = 0;
+            }
 
             for (var i = 0, allcust; allcust = allcusts[i]; i++) {
 
                 if (google.maps.geometry.poly.containsLocation(allcust.koordinat, polygon)) {
                     document.getElementById('selected_markers').value += (a++ > 0 ? ', ' : '') + allcust.customer_code;
+                    (markers[allcust.customer_code]).setIcon("http://labs.google.com/ridefinder/images/" + icon_selected + ".png");
+                    markerselected.push((markers[allcust.customer_code]));
                 }
             }
         }
