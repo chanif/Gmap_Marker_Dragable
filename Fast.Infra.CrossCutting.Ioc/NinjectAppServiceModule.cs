@@ -17,6 +17,8 @@ namespace Fast.Infra.CrossCutting.IoC
 			Bind<IRoleModuleAppService>().To<RoleModuleAppService>();
 			Bind<ILocationAppService>().To<LocationAppService>();
 			Bind<ICustomerAppService>().To<CustomerAppService>();
+			Bind<IApprovalAppService>().To<ApprovalAppService>();
+			Bind<IRouteAppService>().To<RouteAppService>();
 		}
 	}
 }

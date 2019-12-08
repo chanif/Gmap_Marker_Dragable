@@ -42,6 +42,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Entities\BaseEntity.cs" />
+    <Compile Include="Entities\Approval.cs" />
+    <Compile Include="Entities\Route.cs" />
     <Compile Include="Entities\Customer.cs" />
     <Compile Include="Entities\Module.cs" />
     <Compile Include="Entities\Location.cs" />
@@ -51,6 +53,8 @@
     <Compile Include="Entities\User.cs" />
     <Compile Include="Interfaces\Repositories\IRepositoryBase.cs" />
     <Compile Include="Interfaces\Repositories\IUnitOfWork.cs" />
+    <Compile Include="Interfaces\Services\IApprovalService.cs" />
+    <Compile Include="Interfaces\Services\IRouteService.cs" />
     <Compile Include="Interfaces\Services\ICustomerService.cs" />
     <Compile Include="Interfaces\Services\IModuleService.cs" />
     <Compile Include="Interfaces\Services\IRoleModuleService.cs" />
@@ -60,6 +64,8 @@
     <Compile Include="Interfaces\Services\IRoleService.cs" />
     <Compile Include="Interfaces\Services\IUserService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Services\ApprovalService.cs" />
+    <Compile Include="Services\RouteService.cs" />
     <Compile Include="Services\CustomerService.cs" />
     <Compile Include="Services\LocationService.cs" />
     <Compile Include="Services\ModuleService.cs" />

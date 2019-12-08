@@ -48,7 +48,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AppServiceBase.cs" />
+    <Compile Include="ApprovalAppService.cs" />
+    <Compile Include="RouteAppService.cs" />
+    <Compile Include="Interfaces\IRouteAppService.cs" />
     <Compile Include="Interfaces\IAppServiceBase.cs" />
+    <Compile Include="Interfaces\IApprovalAppService.cs" />
     <Compile Include="Interfaces\ICustomerAppService.cs" />
     <Compile Include="Interfaces\IModuleAppService.cs" />
     <Compile Include="Interfaces\ILocationAppService.cs" />

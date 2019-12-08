@@ -17,5 +17,7 @@ namespace Fast.Infra.Data
         public DbSet<Module> Modules { get; set; }
         public DbSet<RoleModule> RoleModules { get; set; }
         public DbSet<Customer> Customers { get; set; }
+        public DbSet<Approval> Approvals { get; set; }
+        public DbSet<Route> Routes { get; set; }
     }
 }
