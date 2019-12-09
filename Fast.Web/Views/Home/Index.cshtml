@@ -289,6 +289,26 @@
                 }
             }
 
+            $.ajax({
+                type: "POST",
+                url: "@Url.Action("Insert", "Approval")",
+                data: JSON.stringify({
+                    customers: $('#selected_markers').val(),
+                    territory: radioID
+                }),
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function (result) {
+                    if (result.Status == 'True') {
+                        alert("berhasil tersimpan");
+                    }
+                    else {
+                        alert("gagal tersimpan");
+                    }
+                }
+                    
+            });
+
             clearSelection();
         }
 

@@ -7,70 +7,136 @@ using System.Linq.Expressions;
 
 namespace Fast.Infra.Data
 {
-	public class RepositoryBase<TEntity> : IRepositoryBase<TEntity> where TEntity : class
-	{
-		protected readonly FastAppContext Db;
-		protected IDbSet<TEntity> DbSet;
+    public class RepositoryBase<TEntity> : IRepositoryBase<TEntity> where TEntity : class
+    {
+        protected readonly FastAppContext Db;
+        protected IDbSet<TEntity> DbSet;
 
-		public RepositoryBase(FastAppContext db)
-		{
-			Db = db;
-			DbSet = Db.Set<TEntity>();
-		}
+        public RepositoryBase(FastAppContext db)
+        {
+            Db = db;
+            DbSet = Db.Set<TEntity>();
+        }
 
-		public void Add(TEntity obj)
-		{
-			DbSet.Add(obj);
-		}
+        public void ExecuteSql(string query, object[] parameters)
+        {
+            Db.Database.ExecuteSqlCommand(query, parameters);
+        }
 
-		public TEntity GetById(int id)
-		{
-			return DbSet.Find(id);
-		}
+        public void Add(TEntity obj)
+        {
+            DbSet.Add(obj);
+        }
 
-		public ICollection<TEntity> GetAll()
-		{
-			return DbSet.ToList();
-		}
+        public TEntity GetById(long id, bool asNoTracking = false)
+        {
+            if (asNoTracking)
+            {
+                var entity = DbSet.Find(id);
+                if (entity == null)
+                {
+                    return null;
+                }
+                else
+                {
+                    Db.Entry(entity).State = EntityState.Detached;
+                    return entity;
+                }
+            }
+            else
+            {
+                return DbSet.Find(id);
+            }
+        }
 
-		public void Update(TEntity obj)
-		{
-			Db.Entry(obj).State = EntityState.Modified;
-		}
+        public TEntity GetByName(string name, bool asNoTracking = false)
+        {
+            if (asNoTracking)
+            {
+                var entity = DbSet.Find(name);
+                if (entity == null)
+                {
+                    return null;
+                }
+                else
+                {
+                    Db.Entry(entity).State = EntityState.Detached;
+                    return entity;
+                }
+            }
+            else
+            {
+                return DbSet.Find(name);
+            }
+        }
 
-		public void Remove(TEntity obj)
-		{
-			DbSet.Remove(obj);
-		}
+        public ICollection<TEntity> GetAll()
+        {
+            return DbSet.ToList();
+        }
 
-		public TEntity Get(Expression<Func<TEntity, bool>> predicate)
-		{
-			return DbSet.Where(predicate).FirstOrDefault();
-		}
+        public void Update(TEntity obj)
+        {
+            Db.Entry(obj).State = EntityState.Modified;
+        }
 
-		public virtual TEntity Get(Expression<Func<TEntity, bool>> predicate, ICollection<string> includes)
-		{
-			IQueryable<TEntity> query = DbSet;
-			query = query.Where(predicate);
-			query = includes.Aggregate(query, (current, include) => current.Include(include));
-			TEntity result = query.FirstOrDefault();
+        public void Remove(TEntity obj)
+        {
+            DbSet.Remove(obj);
+        }
 
-			return result;
-		}
+        public void RemoveRange(IEnumerable<TEntity> objList)
+        {
+            Db.Set<TEntity>().RemoveRange(objList);
+        }
 
-		public IEnumerable<TEntity> Find(Expression<Func<TEntity, bool>> predicate)
-		{
-			return DbSet.Where(predicate).ToList();
-		}
+        public TEntity Get(Expression<Func<TEntity, bool>> predicate)
+        {
+            return DbSet.Where(predicate).FirstOrDefault();
+        }
 
-		public IEnumerable<TEntity> Find(Expression<Func<TEntity, bool>> predicate, ICollection<string> includes)
-		{
-			IQueryable<TEntity> query = DbSet;
-			query = query.Where(predicate);
-			query = includes.Aggregate(query, (current, include) => current.Include(include));
+        public TEntity Get(Expression<Func<TEntity, bool>> predicate, bool asNoTracking = false)
+        {
+            TEntity entity = DbSet.Where(predicate).FirstOrDefault();
+            if (entity != null && asNoTracking)
+                Db.Entry(entity).State = EntityState.Detached;
 
-			IEnumerable<TEntity> result = query.ToList();
-			return result;
-		}
-	}
+            return entity;
+        }
+
+        public virtual TEntity Get(Expression<Func<TEntity, bool>> predicate, ICollection<string> includes)
+        {
+            IQueryable<TEntity> query = DbSet;
+            query = query.Where(predicate);
+            query = includes.Aggregate(query, (current, include) => current.Include(include));
+            TEntity result = query.FirstOrDefault();
+
+            return result;
+        }
+
+        public IEnumerable<TEntity> Find(Expression<Func<TEntity, bool>> predicate)
+        {
+            return DbSet.Where(predicate).ToList();
+        }
+
+        public IEnumerable<TEntity> Find(Expression<Func<TEntity, bool>> predicate, ICollection<string> includes)
+        {
+            IQueryable<TEntity> query = DbSet;
+            query = query.Where(predicate);
+            query = includes.Aggregate(query, (current, include) => current.Include(include));
+
+            IEnumerable<TEntity> result = query.ToList();
+            return result;
+        }
+
+        public IEnumerable<TEntity> FindNoTracking(Expression<Func<TEntity, bool>> predicate)
+        {
+            var entity = DbSet.Where(predicate).ToList();
+            foreach (var item in entity)
+            {
+                Db.Entry(item).State = EntityState.Detached;
+            }
+            return entity;
+        }
+    }
 }

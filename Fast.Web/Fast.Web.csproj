@@ -161,6 +161,8 @@
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
     <Compile Include="Models\BaseModel.cs" />
+    <Compile Include="Models\ApprovalModel.cs" />
+    <Compile Include="Models\RouteModel.cs" />
     <Compile Include="Models\CustomerModel.cs" />
     <Compile Include="Models\ModuleModel.cs" />
     <Compile Include="Models\LocationModel.cs" />

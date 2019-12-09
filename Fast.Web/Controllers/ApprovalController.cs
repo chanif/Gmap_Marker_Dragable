@@ -18,25 +18,54 @@ namespace Fast.Web.Controllers
 	{
         private readonly ICustomerAppService _customerAppService;
         private readonly IApprovalAppService _approvalAppService;
-        public ApprovalController(IApprovalAppService approvalAppService)
+        public ApprovalController(ICustomerAppService customerAppService, IApprovalAppService approvalAppService)
         {
             _approvalAppService = approvalAppService;
+            _customerAppService = customerAppService;
         }
 
         public ActionResult Index()
         {
-            var model = new CustomerListModel();
-            model.District = "DJKT001";
+            var model = new ApprovalListModel();
 
-            ICollection<QueryFilter> filters = new List<QueryFilter>();
-            filters.Add(new QueryFilter("district", model.District));
-
-            string customers = _customerAppService.Find(filters);
-            //string customers = _customerAppService.GetAll();
-            model.Customers = string.IsNullOrEmpty(customers) ? new List<CustomerModel>() : JsonConvert.DeserializeObject<List<CustomerModel>>(customers);
-            model.Customers = model.Customers.OrderBy(x => x.teritorry).ToList();
+            string approvals = _approvalAppService.GetAll();
+            model.Approvals = string.IsNullOrEmpty(approvals) ? new List<ApprovalModel>() : JsonConvert.DeserializeObject<List<ApprovalModel>>(approvals);
+            model.Approvals = model.Approvals.OrderByDescending(x => x.timestamp).ToList();
 
             return View(model);
+        }
+
+        [HttpPost]
+        public ActionResult Insert(string customers, string territory)
+        {
+            try
+            {
+                List<string> customerList = customers.Split(',').Select(x => x.Trim()).Where(x => !string.IsNullOrWhiteSpace(x)).ToList();
+                customerList = customerList.Distinct().ToList();
+
+                foreach (var cust in customerList)
+                {
+                    string customer = _customerAppService.GetBy("customer_code", cust);
+                    var customerModel = string.IsNullOrEmpty(customer) ? new CustomerModel() : JsonConvert.DeserializeObject<CustomerModel>(customer);
+                    
+                    var approval = new ApprovalModel();
+                    approval.customer_code = cust;
+                    approval.customer_name = customerModel.customer_name;
+                    approval.customer_address = customerModel.customer_address;
+                    approval.territory_old = customerModel.teritorry;
+                    approval.territory_new = territory;
+                    approval.timestamp = DateTime.Now;
+
+                    string data = JsonHelper<ApprovalModel>.Serialize(approval);
+                    var lalala = _approvalAppService.Add(data);
+                }
+
+                return Json(new { Status = "True" }, JsonRequestBehavior.AllowGet);
+            }
+            catch (Exception ex)
+            {
+                return Json(new { Status = "False" }, JsonRequestBehavior.AllowGet);
+            }
         }
     }
 }
