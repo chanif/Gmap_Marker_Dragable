@@ -13,9 +13,19 @@
 <body>
     <header class="navbar navbar-header navbar-header-fixed">
         <div class="navbar-brand">
-            <a href="#" class="df-logo">Field<span>IQ</span></a>
+            <a href="/" class="df-logo">Field<span>IQ</span></a>
         </div><!-- navbar-brand -->
+        <div id="navbarMenu" class="navbar-menu-wrapper">
+            <ul class="nav navbar-menu">
+                <li class="nav-item"><a href="/" class="nav-link"><i data-feather="box"></i> Home</a></li>
+                <li class="nav-item"><a href="/Approval" class="nav-link"><i data-feather="box"></i> Approval</a></li>
+                <li class="nav-item"><a href="/Route" class="nav-link"><i data-feather="box"></i> Define Routes</a></li>
+                <li class="nav-item"><a href="/Route/Dirrection" class="nav-link"><i data-feather="box"></i> Dirrection</a></li>
+            </ul>
+        </div><!-- navbar-menu-wrapper -->
+
     </header><!-- navbar -->
+
 
     @RenderBody()
 

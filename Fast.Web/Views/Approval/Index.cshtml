@@ -2,43 +2,58 @@
 @using Fast.Web.Resources;
 
 @section Styles{
+    <link href="~/Content/dashforge/lib/ionicons/css/ionicons.min.css" rel="stylesheet">
+    <link href="~/Content/dashforge/lib/datatables.net-dt/css/jquery.dataTables.min.css" rel="stylesheet">
+    <link href="~/Content/dashforge/lib/datatables.net-responsive-dt/css/responsive.dataTables.min.css" rel="stylesheet">
     <link href="~/Content/dashforge/assets/css/dashforge.css" rel="stylesheet">
 
     <style>
+        table.dataTable thead .sorting_asc, table.dataTable thead .sorting_desc {
+            background-color: inherit;
+        }
+
+        .table th, .table td {
+            vertical-align: middle;
+        }
+
+        table.dataTable thead th, table.dataTable thead td {
+            vertical-align: middle;
+        }
     </style>
 }
 
-<div class="content content-fixed content-auth-alt pd-0-f">
-    <div class="container-fluid ht-100p pd-0-f">
+<div class="content content-fixed content-auth-alt">
+    <div class="container-fluid ht-100p">
         <div class="ht-100p d-flex flex-column">
-            <div class="row">
-                <div class="col-10">
-                    <div id="map" style="min-height:500px"></div>
-                </div>
-                <div class="col-2">
-                    <br>
-                    Use Ctrl+click to select multiple markers, or
-                    click some point to draw shape around markers to select them.
-                    <br><br>
-
-                    Selected markers:
-                    <div class="form-group">
-                        <textarea id="selected_markers" class="form-control" rows="3"></textarea>
-                    </div>
-
-                    Place to territory:
-                    @foreach (var teri in territories)
-                    {
-                        <div class="custom-control custom-radio" style="background-color: #@(colors["color"+counter]);padding: 5px 2rem;">
-                            <input type="radio" name="territory" id="@(teri)" value="@(counter++)" class="custom-control-input">
-                            <label class="custom-control-label" for="@(teri)">@teri</label>
-                        </div>
-                    }
-
-                    <div class="row pd-20">
-                        <button type="button" class="btn btn-danger col-6" onclick="clearSelection()">Reset</button>
-                        <button type="button" class="btn btn-primary col-6" onclick="applySelection()">Apply</button>
-                    </div>
+            <div class="row mg-0">
+                <div class="col-12">
+                    <table class="table" id="dodatatable">
+                        <thead class="thead-primary">
+                            <tr>
+                                <th scope="col">Customer Code</th>
+                                <th scope="col">Customer Name</th>
+                                <th scope="col">Customer Address</th>
+                                <th scope="col">Old Territory</th>
+                                <th scope="col">New Territory</th>
+                                <th scope="col">Status</th>
+                                <th scope="col">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var approval in Model.Approvals)
+                            {
+                                <tr>
+                                    <td>@approval.customer_code</td>
+                                    <td>@approval.customer_name</td>
+                                    <td>@approval.customer_address</td>
+                                    <td>@approval.territory_old</td>
+                                    <td>@approval.territory_new</td>
+                                    <td>@(approval.approve?"Approve":"Waiting")</td>
+                                    <td>@Html.Raw(approval.approve ? "" : "<button class='btn btn-xs btn-primary' onclick='approve("+approval.ID+", this)'>Approve</button> <button class='btn btn-xs btn-danger' onclick='reject("+approval.ID+", this)'>Reject</button>")</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
@@ -49,8 +64,73 @@
     <script src="~/Content/theme/js/jquery-1.10.0.min.js"></script>
     <script src="~/Content/dashforge/lib/bootstrap/js/bootstrap.bundle.min.js"></script>
 
+    <script src="~/Content/dashforge/lib/datatables.net/js/jquery.dataTables.min.js"></script>
+    <script src="~/Content/dashforge/lib/datatables.net-dt/js/dataTables.dataTables.min.js"></script>
+    <script src="~/Content/dashforge/lib/datatables.net-responsive/js/dataTables.responsive.min.js"></script>
+    <script src="~/Content/dashforge/lib/datatables.net-responsive-dt/js/responsive.dataTables.min.js"></script>
+
+    <script src="~/Content/dashforge/lib/feather-icons/feather.min.js"></script>
+    <script src="~/Content/dashforge/lib/perfect-scrollbar/perfect-scrollbar.min.js"></script>
+    <script src="~/Content/theme/lib/pnotify/pnotify.custom.js"></script>
+
+    <script src="~/Content/dashforge/assets/js/dashforge.js"></script>
+
     <script type="text/javascript">
+        function approve(id, e) {
+            $.ajax({
+                type: "POST",
+                url: "@Url.Action("Approve", "Approval")",
+                data: JSON.stringify({
+                    ID: id
+                }),
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function (result) {
+                    if (result.Status == 'True') {
+                        alert("berhasil approve");
+                    }
+                    else {
+                        alert("gagal approve");
+                    }
+                }
+            });
+
+            $(e).closest('td').text('');
+            $(e).closest('td').prev().text('Approve');
+        }
+
+        function reject(id, e) {
+            $.ajax({
+                type: "POST",
+                url: "@Url.Action("Reject", "Approval")",
+                data: JSON.stringify({
+                    ID: id
+                }),
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function (result) {
+                    if (result.Status == 'True') {
+                        alert("berhasil reject");
+                    }
+                    else {
+                        alert("gagal reject");
+                    }
+                }
+            });
+
+            $(e).closest('tr').remove();
+        }
+
         $(document).ready(function () {
+            $('#dodatatable').DataTable({
+                order: [],
+                responsive: true,
+                language: {
+                    searchPlaceholder: 'Search...',
+                    sSearch: '',
+                    lengthMenu: '_MENU_ items/page',
+                }
+            });
         });
     </script>
 }

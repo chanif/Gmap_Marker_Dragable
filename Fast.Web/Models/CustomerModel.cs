@@ -30,11 +30,14 @@ namespace Fast.Web.Models
         public string hari_kunjungan { get; set; }
         public string pposm_category { get; set; }
         public string cluster { get; set; }
+        public int order_number { get; set; }
+
     }
 
     public class CustomerListModel
     {
         public string District { get; set; }
+        public string Territory { get; set; }
         public List<CustomerModel> Customers { get; set; }
     }
 }

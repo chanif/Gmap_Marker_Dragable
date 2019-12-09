@@ -8,7 +8,6 @@ namespace Fast.Web.Models
         public string customer_code { get; set; }
         public string customer_name { get; set; }
         public string customer_address { get; set; }
-
         public string territory_old { get; set; }
         public string territory_new { get; set; }
         public bool approve { get; set; }

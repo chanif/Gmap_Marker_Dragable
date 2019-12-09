@@ -17,16 +17,44 @@ namespace Fast.Web.Controllers
 	public class RouteController : Controller
 	{
         private readonly ICustomerAppService _customerAppService;
-        private readonly IRouteAppService _routeAppService;
-        public RouteController(ICustomerAppService customerAppService, IRouteAppService routeAppService)
+        public RouteController(ICustomerAppService customerAppService)
         {
             _customerAppService = customerAppService;
-            _routeAppService = routeAppService;
         }
 
-        public ActionResult Index()
+        public ActionResult Index(string ID = "")
         {
             var model = new CustomerListModel();
+            model.District = "DJKT001";
+            
+            ICollection<QueryFilter> filters = new List<QueryFilter>();
+            filters.Add(new QueryFilter("district", model.District));
+
+            string customers = _customerAppService.Find(filters);
+            //string customers = _customerAppService.GetAll();
+            model.Customers = string.IsNullOrEmpty(customers) ? new List<CustomerModel>() : JsonConvert.DeserializeObject<List<CustomerModel>>(customers);
+            model.Customers = model.Customers.OrderBy(x => x.teritorry).ThenBy(x=>x.order_number).ToList();
+
+            if (ID == "")
+            {
+                return RedirectToAction("Index/" + model.Customers[0].teritorry);
+            } else
+            {
+                model.Territory = ID;
+                var temp_cust = model.Customers.Where(x => x.teritorry == model.Territory).ToList();
+
+                if (temp_cust[(temp_cust.Count()-1)].order_number == 0)
+                {
+                    model.Customers = model.Customers.OrderBy(x => x.teritorry).ThenBy(x => x.geographical_x).ToList();
+                }
+
+                return View(model);
+            }
+        }
+
+        public ActionResult Dirrection(string ID = "")
+        {
+            var model = new RouteListModel();
             model.District = "DJKT001";
 
             ICollection<QueryFilter> filters = new List<QueryFilter>();
@@ -35,9 +63,17 @@ namespace Fast.Web.Controllers
             string customers = _customerAppService.Find(filters);
             //string customers = _customerAppService.GetAll();
             model.Customers = string.IsNullOrEmpty(customers) ? new List<CustomerModel>() : JsonConvert.DeserializeObject<List<CustomerModel>>(customers);
-            model.Customers = model.Customers.OrderBy(x => x.teritorry).ToList();
+            model.Customers = model.Customers.OrderBy(x => x.teritorry).ThenBy(x => x.customer_code).ToList();
 
-            return View(model);
+            if (ID == "")
+            {
+                return RedirectToAction("Dirrection/" + model.Customers[0].teritorry);
+            }
+            else
+            {
+                model.Territory = ID;
+                return View(model);
+            }
         }
     }
 }
