@@ -25,7 +25,7 @@ namespace Fast.Web.Controllers
         public ActionResult Index()
         {
             var model = new CustomerListModel();
-            model.District = "DSUB002";
+            model.District = "DJKT001";
 
             ICollection<QueryFilter> filters = new List<QueryFilter>();
             filters.Add(new QueryFilter("district", model.District));

@@ -11,8 +11,8 @@ namespace Fast.Domain.Entities
 		public string customer_name { get; set; }
 		public string customer_address { get; set; }
 		public long customer_industry_volume { get; set; }
-        public Nullable<decimal> geographical_x { get; set; }
-        public Nullable<decimal> geographical_y { get; set; }
+        public string geographical_x { get; set; }
+        public string geographical_y { get; set; }
         public string cluster_icis { get; set; }
 		public string cluster_nrs { get; set; }
 		public string cust_seg_type { get; set; }
