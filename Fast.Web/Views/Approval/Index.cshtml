@@ -87,7 +87,7 @@
                 dataType: "json",
                 success: function (result) {
                     if (result.Status == 'True') {
-                        alert("berhasil approve");
+                        //alert("berhasil approve");
                     }
                     else {
                         alert("gagal approve");
@@ -95,8 +95,8 @@
                 }
             });
 
+            $(e).closest('td').prev('td').text('Approve');
             $(e).closest('td').text('');
-            $(e).closest('td').prev().text('Approve');
         }
 
         function reject(id, e) {
@@ -110,7 +110,7 @@
                 dataType: "json",
                 success: function (result) {
                     if (result.Status == 'True') {
-                        alert("berhasil reject");
+                        //alert("berhasil reject");
                     }
                     else {
                         alert("gagal reject");

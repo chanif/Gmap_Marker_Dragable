@@ -19,4 +19,10 @@ namespace Fast.Web.Models
         public List<CustomerModel> Customers { get; set; }
         public List<RouteModel> Routes { get; set; }
     }
+
+    public class CustOrderModel
+    {
+        public long id { get; set; }
+        public string name { get; set; }
+    }
 }

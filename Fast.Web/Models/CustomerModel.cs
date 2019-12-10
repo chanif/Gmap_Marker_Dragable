@@ -31,7 +31,6 @@ namespace Fast.Web.Models
         public string pposm_category { get; set; }
         public string cluster { get; set; }
         public int order_number { get; set; }
-
     }
 
     public class CustomerListModel
@@ -39,5 +38,12 @@ namespace Fast.Web.Models
         public string District { get; set; }
         public string Territory { get; set; }
         public List<CustomerModel> Customers { get; set; }
+    }
+
+    public class CustomerSaveModel : BaseModel
+    {
+        public string teritorry { get; set; }
+        public string customer_code { get; set; }
+        public int order_number { get; set; }
     }
 }

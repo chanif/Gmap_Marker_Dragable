@@ -20,7 +20,8 @@
           opacity: 0.5;
           z-index: 2000;
         }
-         ol.cust-order li {
+        
+        ol.cust-order li {
           cursor: pointer;
         }
 
@@ -57,7 +58,7 @@
                     <ol class="cust-order pd-l-30 mg-t-10">
                         @foreach(var cust in Model.Customers)
                         {
-                            <li class="pd-5" data-id="@cust.ID">@cust.customer_code - @cust.customer_name</li>
+                            <li data-id="@cust.ID" data-name="@cust.customer_code" class="pd-5">@cust.customer_code - @cust.customer_name</li>
                         }
                     </ol>
 
@@ -82,19 +83,22 @@
 
         console.log(allterritories);
 
+        var jsonString;
         var map;
         var markers = [];
         var markerselected = [];
+        var markerselectedID = 0;
         var selecting = false;
         var geocoder = new google.maps.Geocoder();
         var infoWindow;
-        var icon = "mm_20_white";
+        var icon = "http://labs.google.com/ridefinder/images/mm_20_white.png";
+        var icon_selected = "http://maps.google.com/mapfiles/arrow.png";
 
         function initialize() {
             //******************************************************************************************** INIT GMAP
             map = new google.maps.Map(document.getElementById('map'), {
                 center: {lat: 0, lng: 0},
-                zoom: 13,
+                zoom: 14,
                 mapTypeId: google.maps.MapTypeId.ROADMAP
             });
             infoWindow = new google.maps.InfoWindow();
@@ -114,6 +118,11 @@
                 google.maps.event.addListener(marker, "click", function (e) {
                     infoWindow.setContent(info);
                     infoWindow.open(map, marker);
+
+                    //alert(marker.get('data_id'));
+                    $('.cust-order').find('[data-id="' + markerselectedID + '"]').removeClass("bg-primary");
+                    $('.cust-order').find('[data-id="' + marker.get('data_id') + '"]').addClass("bg-primary");
+                    markerselectedID = marker.get('data_id');
                 });
             }
 
@@ -125,7 +134,7 @@
                     marker = new google.maps.Marker({
                         position: locat,
                         icon: {
-                            url: "http://labs.google.com/ridefinder/images/" + icon + ".png",
+                            url: icon,
                             labelOrigin: new google.maps.Point(6, 25)
                         },
                         label: {
@@ -136,39 +145,90 @@
                         },
                         //animation: google.maps.Animation.DROP,
                         map: map,
-                        //label: i+1,
+                        data_id: allcust.ID,
                         title: allcust.customer_code + " (" + allcust.teritorry + ")"
                     });
 
                     addMarkerEvent(marker, '<b>' + allcust.customer_code + '</b><br>' + allcust.customer_name + '<br>' + allcust.customer_address + '<br>' + allcust.teritorry);
-                    markers[allcust.customer_code] = marker;
+                    markers[allcust.ID] = marker;
                 }
             }
             initmarker();
-            
+        }
 
-            //******************************************************************************************** GAMBAR POLYGON UNTUK SELECTION
-            google.maps.event.addListener(map, 'click', function (e) {
-                // set a marker there, with a small measle icon
-                var position = e.latLng;
-                polygonLocations.push(position);
-                polygonMarkers.push(new google.maps.Marker({
-                    icon: 'https://maps.gstatic.com/intl/en_ALL/mapfiles/markers2/measle.png',
-                    position: position,
-                    map: map
-                }));
-                // now let's add a polygon
-                drawPolygon(polygonLocations);
+        function save() {
+            $.ajax({
+                    type: "POST",
+                    url: "@Url.Action("Define", "Route")",
+                    data: JSON.stringify({
+                        //territory: $('#territory_selection').val(),
+                        data: jsonString
+                    }),
+                    contentType: "application/json; charset=utf-8",
+                    dataType: "json",
+                    success: function (result) {
+                        if (result.Status == 'True') {
+                            //alert("berhasil approve");
+                        }
+                        else {
+                            //alert("gagal simpan perubahan");
+                        }
+
+                        location.reload();
+                    }
             });
+
+            
         }
 
         $(document).ready(function () {
             google.maps.event.addDomListener(window, 'load', initialize);
 
-            $("ol.cust-order").sortable();
+            var group = $("ol.cust-order").sortable({
+              group: 'cust-order',
+              delay: 500,
+              onDrop: function ($item, container, _super) {
+                var data = group.sortable("serialize").get();
+                  console.log(data);
+
+                  for (var i = 0; i < data[0].length; i++) {
+                      (markers[data[0][i].id]).set('label', {
+                            text: String(i+1),
+                            color: '#ef00ff',
+                            fontSize: '14px',
+                            fontWeight: 'bold'
+                        });
+                  }
+
+                  jsonString = JSON.stringify(data[0], null, ' ');
+                  jsonString = jsonString.replace(/\r?\n|\r/g, '');
+
+                _super($item, container);
+              }
+            });
+
 
             $("#territory_selection").change(function () {
                 window.location.href = "/Route/Index/"+$(this).val();
+            })
+
+
+            $('ol.cust-order li').click(function () {
+                if (markerselected.length > 0) {
+                    for (var i = 0, mark; mark = markerselected[i]; i++) {
+                        mark.setIcon({
+                            url: icon,
+                            labelOrigin: new google.maps.Point(6, 25)
+                        });
+                    }
+                }
+                markerselected = [];
+
+                (markers[$(this).attr('data-id')]).setIcon({
+                            url: icon_selected,
+                            labelOrigin: new google.maps.Point(6, 25)
+                        });
+                markerselected.push(markers[$(this).attr('data-id')]);
             })
         });
     </script>

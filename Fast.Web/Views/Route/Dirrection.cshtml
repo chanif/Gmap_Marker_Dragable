@@ -4,56 +4,79 @@
 
 @{
     var territories = Model.Customers.Select(x => x.teritorry).Distinct().ToList();
-    var counter = 1;
-    Dictionary<string, string> colors = new Dictionary<string,string>();
-    colors.Add("color1", "ed53ed");
-    colors.Add("color2", "f2f261");
-    colors.Add("color3", "5959ff");
-    colors.Add("color4", "62d962");
-    colors.Add("color5", "ff4050");
-    colors.Add("color6", "f5c60c");
-    colors.Add("color7", "c1c1c1");
-    colors.Add("color8", "cca166");
-    colors.Add("color9", "000000");
+    Model.Customers = Model.Customers.Where(x => x.teritorry == Model.Territory).OrderBy(x=>x.order_number).ThenBy(x=>x.geographical_y).ToList();
+
+    var page = Int32.Parse(Request.Params["page"]);
+
+    var skip = 0;
+    var take = 20;
+
+    if (page > 1)
+    {
+        skip = (20 * (page - 1)) - 1;
+    }
+
+    Model.Customers = Model.Customers.Skip(skip).Take(take).ToList();
 }
 
 @section Styles{
     <link href="~/Content/dashforge/assets/css/dashforge.css" rel="stylesheet">
 
     <style>
+        body.dragging, body.dragging * {
+            cursor: move !important;
+        }
+
+        .dragged {
+            position: absolute;
+            opacity: 0.5;
+            z-index: 2000;
+        }
+
+        ol.cust-order li {
+            cursor: pointer;
+        }
+
+            ol.cust-order li.placeholder {
+                position: relative;
+                /** More li styles **/
+            }
+
+                ol.cust-order li.placeholder:before {
+                    position: absolute;
+                    /** Define arrowhead **/
+                }
     </style>
 }
 
 <div class="content content-fixed content-auth-alt pd-0-f">
     <div class="container-fluid ht-100p pd-0-f">
         <div class="ht-100p d-flex flex-column">
-            <div class="row">
-                <div class="col-10">
+            <div class="row mg-0">
+                <div class="col-9">
                     <div id="map" style="min-height:500px"></div>
                 </div>
-                <div class="col-2">
+                <div class="col-3" style="height:500px;overflow: scroll;">
                     <br>
-                    Use Ctrl+click to select multiple markers, or
-                    click some point to draw shape around markers to select them.
+                    Select Territory:
+                    <select class="custom-select" id="territory_selection">
+                        @foreach (var teri in territories)
+                        {
+                            <option value="@teri" @(teri == Model.Territory ? "selected" : "")>@teri</option>
+                        }
+                    </select>
+
                     <br><br>
-
-                    Selected markers:
-                    <div class="form-group">
-                        <textarea id="selected_markers" class="form-control" rows="3"></textarea>
-                    </div>
-
-                    Place to territory:
-                    @foreach (var teri in territories)
-                    {
-                        <div class="custom-control custom-radio" style="background-color: #@(colors["color"+counter]);padding: 5px 2rem;">
-                            <input type="radio" name="territory" id="@(teri)" value="@(counter++)" class="custom-control-input">
-                            <label class="custom-control-label" for="@(teri)">@teri</label>
-                        </div>
-                    }
+                    You can drag &amp; drop to adjust the order
+                    <ol class="cust-order pd-l-30 mg-t-10">
+                        @foreach (var cust in Model.Customers)
+                        {
+                            <li data-id="@cust.ID" data-name="@cust.customer_code" class="pd-5">@cust.customer_code - @cust.customer_name</li>
+                        }
+                    </ol>
 
                     <div class="row pd-20">
-                        <button type="button" class="btn btn-danger col-6" onclick="clearSelection()">Reset</button>
-                        <button type="button" class="btn btn-primary col-6" onclick="applySelection()">Apply</button>
+                        <a class="btn btn-primary col-12" href="/Route/Dirrection?territory=@(Request.Params["territory"])&page=@(1+ Int32.Parse(Request.Params["page"]))">Next</a>
                     </div>
                 </div>
             </div>
@@ -64,6 +87,7 @@
 @section Scripts{
     <script src="~/Content/theme/js/jquery-1.10.0.min.js"></script>
     <script src="~/Content/dashforge/lib/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="~/Content/dashforge/lib/jquery-sortable/js/jquery-sortable-min.js"></script>
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDpjc1xdCmFJ6pptU_NVA54Cjpi_kqFaEU&libraries=geometry"></script>
 
     <script type="text/javascript">
@@ -72,39 +96,22 @@
 
         console.log(allterritories);
 
+        var jsonString;
         var map;
         var markers = [];
         var markerselected = [];
+        var markerselectedID = 0;
         var selecting = false;
-        var polygon;
-        var polygonMarkers = [];
-        var polygonLocations = [];
         var geocoder = new google.maps.Geocoder();
         var infoWindow;
-        var icons = ["mm_20_purple",
-            "mm_20_yellow",
-            "mm_20_blue",
-            "mm_20_green",
-            "mm_20_red",
-            "mm_20_orange",
-            "mm_20_gray",
-            "mm_20_brown",
-            "mm_20_black"];
-
-        var icon_selected = "mm_20_white";
-
-        window.onkeydown = function(e) {
-            selecting = ((e.keyIdentifier == 'Control') || (e.ctrlKey == true));
-        }
-        window.onkeyup = function(e) {
-            selecting = false;
-        }
+        var icon = "http://labs.google.com/ridefinder/images/mm_20_white.png";
+        var icon_selected = "http://maps.google.com/mapfiles/arrow.png";
 
         function initialize() {
             //******************************************************************************************** INIT GMAP
             map = new google.maps.Map(document.getElementById('map'), {
                 center: {lat: 0, lng: 0},
-                zoom: 13,
+                zoom: 14,
                 mapTypeId: google.maps.MapTypeId.ROADMAP
             });
             infoWindow = new google.maps.InfoWindow();
@@ -119,202 +126,127 @@
             });
 
             function addMarkerEvent(marker, info) {
-                //******************************************************************************************** KETIKA MARKER DROP
-                google.maps.event.addListener(marker, "dragend", function (event) {
-                    var lat = event.latLng.lat();
-                    var lng = event.latLng.lng();
-
-                    console.log(lat + ' , ' + lng);
-                    console.log(marker.get('customer_code'));
-
-                    for (var i = 0, allcust; allcust = allcusts[i]; i++) {
-                        if (allcust.customer_code == marker.get('customer_code')) {
-                            var locat = new google.maps.LatLng(lat, lng);
-                            allcusts[i].koordinat = locat;
-                        }
-                    }
-
-                });
-
                 //******************************************************************************************** KETIKA MARKER CLICKED
                 google.maps.event.addListener(marker, "click", function (e) {
-                    if (selecting) {
-                        marker.setIcon("http://labs.google.com/ridefinder/images/" + icon_selected + ".png");
-                        markerselected.push(marker);
-
-                        var a = 260891;
-                        if (document.getElementById('selected_markers').value == '') {
-                            a = 0;
-                        }
-                        document.getElementById('selected_markers').value += (a > 0 ? ', ' : '') + marker.get('customer_code');
-
-                    } else {
-                        clearSelection();
-                        markerselected.push(marker);
-                        marker.setIcon("http://labs.google.com/ridefinder/images/" + icon_selected + ".png");
-                        document.getElementById('selected_markers').value = marker.get('customer_code');
-                    }
-
-                    
-                    console.log(markerselected);
-
                     infoWindow.setContent(info);
                     infoWindow.open(map, marker);
+
+                    //alert(marker.get('data_id'));
+                    $('.cust-order').find('[data-id="' + markerselectedID + '"]').removeClass("bg-primary");
+                    $('.cust-order').find('[data-id="' + marker.get('data_id') + '"]').addClass("bg-primary");
+                    markerselectedID = marker.get('data_id');
                 });
             }
 
             //******************************************************************************************** GAMBAR MARKER
             function initmarker() {
-                var counter = -1;
-                var last_territory = 0;
                 for (var i = 0, allcust; allcust = allcusts[i]; i++) {
-                    if (last_territory != allcust.teritorry) {
-                        counter++;
-                        console.log(last_territory);
-                        last_territory = allcust.teritorry;
-                    }
-
                     var locat = new google.maps.LatLng(allcust.geographical_x, allcust.geographical_y);
                     allcusts[i].koordinat = locat;
                     marker = new google.maps.Marker({
                         position: locat,
-                        draggable: true,
-                        icon: "http://labs.google.com/ridefinder/images/" + icons[counter] + ".png",
+                        icon: {
+                            url: icon,
+                            labelOrigin: new google.maps.Point(6, 25)
+                        },
+                        label: {
+                            text: String(i+1),
+                            color: '#ef00ff',
+                            fontSize: '14px',
+                            fontWeight: 'bold'
+                        },
                         //animation: google.maps.Animation.DROP,
                         map: map,
-                        customer_code: allcust.customer_code,
-                        default_icon: "http://labs.google.com/ridefinder/images/" + icons[counter] + ".png",
+                        data_id: allcust.ID,
                         title: allcust.customer_code + " (" + allcust.teritorry + ")"
                     });
 
                     addMarkerEvent(marker, '<b>' + allcust.customer_code + '</b><br>' + allcust.customer_name + '<br>' + allcust.customer_address + '<br>' + allcust.teritorry);
-                    markers[allcust.customer_code] = marker;
+                    markers[allcust.ID] = marker;
                 }
             }
             initmarker();
+
+            var directionsService = new google.maps.DirectionsService();
+
+            var renderOptions = { draggable: true };
+            var directionDisplay = new google.maps.DirectionsRenderer(renderOptions);
+
+            //set the directions display service to the map
+            directionDisplay.setMap(map);
+            //set the directions display panel
+            //panel is usually just and empty div.  
+            //This is where the turn by turn directions appear.
+            //directionDisplay.setPanel(directionsPanel); 
+
+            //build the waypoints
+            //free api allows a max of 9 total stops including the start and end address
+            //premier allows a total of 25 stops. 
             
+            var waypoints = [];
+            var last_locat = '';
 
-            //******************************************************************************************** GAMBAR POLYGON UNTUK SELECTION
-            google.maps.event.addListener(map, 'click', function (e) {
-                // set a marker there, with a small measle icon
-                var position = e.latLng;
-                polygonLocations.push(position);
-                polygonMarkers.push(new google.maps.Marker({
-                    icon: 'https://maps.gstatic.com/intl/en_ALL/mapfiles/markers2/measle.png',
-                    position: position,
-                    map: map
-                }));
-                // now let's add a polygon
-                drawPolygon(polygonLocations);
-            });
-        }
+            for (var i = 1; i < allcusts.length-1; i++) {
+                allcust = allcusts[i];
+                var locat = new google.maps.LatLng(allcust.geographical_x, allcust.geographical_y);
 
-        // draws a polygon
-        function drawPolygon(points) {
-            if (points.length < 3) {
-                return;
-            }
-            // first delete the previous polygon
-            if (polygon) {
-                polygon.setMap(null);
+                waypoints.push({
+                    location: locat,
+                    stopover: true
+                });
+
+                last_locat = locat;
             }
 
-            polygon = new google.maps.Polygon({
-                paths: points,
-                strokeColor: '#FF0000',
-                strokeOpacity: 0.8,
-                strokeWeight: 2,
-                fillColor: '#FF0000',
-                fillOpacity: 0.35,
-                map: map
-            });
-            // display to input
-            displaySelectedMarkers(polygon);
-        }
+            //set the starting address and destination address
+            var originAddress = new google.maps.LatLng(allcusts[0].geographical_x, allcusts[0].geographical_y);
+            var destinationAddress = last_locat;
 
-        // display the selected markers to input.
-        function displaySelectedMarkers(polygon) {
-            var a = 260891;
-            if (document.getElementById('selected_markers').value == '') {
-                a = 0;
-            }
+            var request = {
+                    origin: originAddress,
+                    destination: destinationAddress,
+                    waypoints: waypoints, //an array of waypoints
+                    optimizeWaypoints: true, //set to true if you want google to determine the shortest route or false to use the order specified.
+                    travelMode: google.maps.DirectionsTravelMode.DRIVING
+                };
 
-            for (var i = 0, allcust; allcust = allcusts[i]; i++) {
-
-                if (google.maps.geometry.poly.containsLocation(allcust.koordinat, polygon)) {
-                    document.getElementById('selected_markers').value += (a++ > 0 ? ', ' : '') + allcust.customer_code;
-                    (markers[allcust.customer_code]).setIcon("http://labs.google.com/ridefinder/images/" + icon_selected + ".png");
-                    markerselected.push((markers[allcust.customer_code]));
+            //get the route from the directions service
+            directionsService.route(request, function (response, status) {
+                if (status == google.maps.DirectionsStatus.OK) {
+                    directionDisplay.setDirections(response);
                 }
-            }
-        }
-
-        function clearSelection() {
-            if (polygon) {
-                polygon.setMap(null);
-            }
-            for (var i in polygonMarkers) {
-                polygonMarkers[i].setMap(null);
-            }
-            polygonLocations = [];
-
-            console.log("marker selected:");
-            console.log(markerselected);
-            if (markerselected.length > 0) {
-                for (var i = 0, mark; mark = markerselected[i]; i++) {
-                    mark.setIcon(mark.get('default_icon'));
+                else {
+                    //handle error
                 }
-            }
-            markerselected = [];
-
-            document.getElementById('selected_markers').value = '';
-        }
-
-        function applySelection() {
-            var radioValue = $("input[name='territory']:checked").val();
-            radioValue = radioValue - 1;
-            var radioID = $("input[name='territory']:checked").attr('id');
-
-            console.log(radioValue);
-            console.log(radioID);
-
-            if (radioID === undefined) {
-                alert("Please select territory above!");
-            } else {
-                if (markerselected.length > 0) {
-                    for (var i = 0, mark; mark = markerselected[i]; i++) {
-                        //mark.setIcon("http://labs.google.com/ridefinder/images/" + icons[radioValue] + ".png");
-                        mark.default_icon = "http://labs.google.com/ridefinder/images/" + icons[radioValue] + ".png";
-                    }
-                }
-            }
-
-            $.ajax({
-                type: "POST",
-                url: "@Url.Action("Insert", "Approval")",
-                data: JSON.stringify({
-                    customers: $('#selected_markers').val(),
-                    territory: radioID
-                }),
-                contentType: "application/json; charset=utf-8",
-                dataType: "json",
-                success: function (result) {
-                    if (result.Status == 'True') {
-                        alert("berhasil tersimpan");
-                    }
-                    else {
-                        alert("gagal tersimpan");
-                    }
-                }
-                    
             });
 
-            clearSelection();
         }
 
-        
         $(document).ready(function () {
             google.maps.event.addDomListener(window, 'load', initialize);
+
+            $("#territory_selection").change(function () {
+                window.location.href = "/Route/Dirrection?territory="+$(this).val()+"&page=1";
+            })
+
+            $('ol.cust-order li').click(function () {
+                if (markerselected.length > 0) {
+                    for (var i = 0, mark; mark = markerselected[i]; i++) {
+                        mark.setIcon({
+                            url: icon,
+                            labelOrigin: new google.maps.Point(6, 25)
+                        });
+                    }
+                }
+                markerselected = [];
+
+                (markers[$(this).attr('data-id')]).setIcon({
+                            url: icon_selected,
+                            labelOrigin: new google.maps.Point(6, 25)
+                        });
+                markerselected.push(markers[$(this).attr('data-id')]);
+            })
+
         });
     </script>
 }
