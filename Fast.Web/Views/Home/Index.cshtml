@@ -5,7 +5,7 @@
 @{
     var territories = Model.Customers.Select(x => x.teritorry).Distinct().ToList();
     var counter = 1;
-    Dictionary<string, string> colors = new Dictionary<string,string>();
+    Dictionary<string, string> colors = new Dictionary<string, string>();
     colors.Add("color1", "ed53ed");
     colors.Add("color2", "f2f261");
     colors.Add("color3", "5959ff");
@@ -19,8 +19,23 @@
 
 @section Styles{
     <link href="~/Content/dashforge/assets/css/dashforge.css" rel="stylesheet">
+    <script src='https://api.mapbox.com/mapbox-gl-js/v1.4.1/mapbox-gl.js'></script>
+    <link href='https://api.mapbox.com/mapbox-gl-js/v1.4.1/mapbox-gl.css' rel='stylesheet' />
+    <script src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v4.4.2/mapbox-gl-geocoder.min.js"></script>
+    <link rel="stylesheet" href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v4.4.2/mapbox-gl-geocoder.css" type="text/css" />
+    <!-- Promise polyfill script required to use Mapbox GL Geocoder in IE 11 -->
+    <script src="https://cdn.jsdelivr.net/npm/es6-promise@4/dist/es6-promise.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/es6-promise@4/dist/es6-promise.auto.min.js"></script>
+    <script src="https://unpkg.com/@("@")mapbox/mapbox-sdk/umd/mapbox-sdk.min.js"></script>
 
     <style>
+        .marker {
+            display: block;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            padding: 0;
+        }
     </style>
 }
 
@@ -64,11 +79,130 @@
 @section Scripts{
     <script src="~/Content/theme/js/jquery-1.10.0.min.js"></script>
     <script src="~/Content/dashforge/lib/bootstrap/js/bootstrap.bundle.min.js"></script>
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDpjc1xdCmFJ6pptU_NVA54Cjpi_kqFaEU&libraries=geometry"></script>
 
-    <script type="text/javascript">
+    <script>
         var allcusts = @(Html.Raw((JsonConvert.SerializeObject(Model.Customers)).Replace("\n", "").Replace("\r", "").Replace("\t", "").Replace(" \"", "\"").Replace(" \"", "\"").Replace(" \"", "\"").Replace(" \"", "\"").Replace(" \"", "\"").Replace(" \"", "\"").Replace(" \"", "\"").Replace(" \"", "\"")));
         var allterritories = @(Html.Raw((JsonConvert.SerializeObject(territories)).Replace("\n", "").Replace("\r", "").Replace("\t", "").Replace(" \"", "\"").Replace(" \"", "\"").Replace(" \"", "\"").Replace(" \"", "\"").Replace(" \"", "\"").Replace(" \"", "\"").Replace(" \"", "\"").Replace(" \"", "\"")));
+
+        var geojson = {
+            'type': 'FeatureCollection',
+            'features': [{
+                    'type': 'Feature',
+                    'properties': {
+                        'message': 'Foo',
+                        'iconSize': [60, 60]
+                    },
+                    'geometry': {
+                        'type': 'Point',
+                        'coordinates': [-66.324462890625, -16.024695711685304]
+                    }
+                },
+                {
+                    'type': 'Feature',
+                    'properties': {
+                        'message': 'Bar',
+                        'iconSize': [50, 50]
+                    },
+                    'geometry': {
+                        'type': 'Point',
+                        'coordinates': [-61.2158203125, -15.97189158092897]
+                    }
+                },
+                {
+                    'type': 'Feature',
+                    'properties': {
+                        'message': 'Baz',
+                        'iconSize': [40, 40]
+                    },
+                    'geometry': {
+                        'type': 'Point',
+                        'coordinates': [-63.29223632812499, -18.28151823530889]
+                    }
+                }
+            ]
+        };
+
+        mapboxgl.accessToken = 'pk.eyJ1IjoiY2hhbmlmIiwiYSI6ImNpc2I1YnJ4OTAwMDMydnFvZDU3YzRydnMifQ.V_ra23LFfun83xlNR6PaXA';
+        var mapboxClient = mapboxSdk({
+            accessToken: mapboxgl.accessToken
+        });
+        mapboxClient.geocoding.forwardGeocode({
+                query: 'Kuningan City jakarta',
+                autocomplete: false,
+                limit: 1
+            })
+            .send()
+            .then(function(response) {
+                if (
+                    response &&
+                    response.body &&
+                    response.body.features &&
+                    response.body.features.length
+                ) {
+                    var feature = response.body.features[0];
+
+                    var map = new mapboxgl.Map({
+                        container: 'map',
+                        style: 'mapbox://styles/mapbox/streets-v11',
+                        center: feature.center,
+                        zoom: 10
+                    });
+                    new mapboxgl.Marker().setLngLat(feature.center).addTo(map);
+
+                    map.addControl(
+                        new MapboxGeocoder({
+                            accessToken: mapboxgl.accessToken,
+                            mapboxgl: mapboxgl
+                        })
+                    );
+
+                    // Add geolocate control to the map.
+                    map.addControl(
+                        new mapboxgl.GeolocateControl({
+                            positionOptions: {
+                                enableHighAccuracy: true
+                            },
+                            trackUserLocation: true
+                        })
+                    );
+
+                    // Add zoom and rotation controls to the map.
+                    map.addControl(new mapboxgl.NavigationControl());
+
+
+                    geojson.features.forEach(function(marker) {
+                        // create a DOM element for the marker
+                        var el = document.createElement('div');
+                        el.className = 'marker';
+                        el.style.backgroundImage =
+                            'url(https://placekitten.com/g/' +
+                            marker.properties.iconSize.join('/') +
+                            '/)';
+                        el.style.width = marker.properties.iconSize[0] + 'px';
+                        el.style.height = marker.properties.iconSize[1] + 'px';
+
+                        var popup = new mapboxgl.Popup({ offset: 25 }).setText(marker.properties.message);
+
+                        // add marker to map
+                        new mapboxgl.Marker(el)
+                            .setLngLat(marker.geometry.coordinates)
+                            .setPopup(popup) // sets a popup on this marker
+                            .addTo(map);
+                    });
+
+
+                }
+            });
+
+
+
+        mapboxgl.accessToken = 'pk.eyJ1IjoiY2hhbmlmIiwiYSI6ImNpc2I1YnJ4OTAwMDMydnFvZDU3YzRydnMifQ.V_ra23LFfun83xlNR6PaXA';
+
+
+    </script>
+
+    <!--
+    <script type="text/javascript">
 
         console.log(allterritories);
 
@@ -155,7 +289,7 @@
                         document.getElementById('selected_markers').value = marker.get('customer_code');
                     }
 
-                    
+
                     console.log(markerselected);
 
                     infoWindow.setContent(info);
@@ -192,7 +326,7 @@
                 }
             }
             initmarker();
-            
+
 
             //******************************************************************************************** GAMBAR POLYGON UNTUK SELECTION
             google.maps.event.addListener(map, 'click', function (e) {
@@ -306,15 +440,16 @@
                         alert("gagal tersimpan");
                     }
                 }
-                    
+
             });
 
             clearSelection();
         }
 
-        
+
         $(document).ready(function () {
             google.maps.event.addDomListener(window, 'load', initialize);
         });
     </script>
+    -->
 }

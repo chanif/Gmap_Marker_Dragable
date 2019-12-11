@@ -29,6 +29,7 @@ namespace Fast.Domain.Entities
 		public string hari_kunjungan { get; set; }
 		public string pposm_category { get; set; }
 		public string cluster { get; set; }
+        public string visit_day { get; set; }
         public int order_number { get; set; }
 	}
 }

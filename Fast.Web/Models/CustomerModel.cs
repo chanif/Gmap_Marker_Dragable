@@ -44,6 +44,7 @@ namespace Fast.Web.Models
     {
         public string teritorry { get; set; }
         public string customer_code { get; set; }
+        public string visit_day { get; set; }
         public int order_number { get; set; }
     }
 }
