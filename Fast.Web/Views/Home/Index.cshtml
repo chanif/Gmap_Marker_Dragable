@@ -6,15 +6,18 @@
     var territories = Model.Customers.Select(x => x.teritorry).Distinct().ToList();
     var counter = 1;
     Dictionary<string, string> colors = new Dictionary<string, string>();
-    colors.Add("color1", "ed53ed");
-    colors.Add("color2", "f2f261");
-    colors.Add("color3", "5959ff");
-    colors.Add("color4", "62d962");
-    colors.Add("color5", "ff4050");
-    colors.Add("color6", "f5c60c");
-    colors.Add("color7", "c1c1c1");
-    colors.Add("color8", "cca166");
-    colors.Add("color9", "000000");
+    colors.Add("color1", "e60000");
+    colors.Add("color2", "ff6633");
+    colors.Add("color3", "ffcc00");
+    colors.Add("color4", "ffff33");
+    colors.Add("color5", "99ff66");
+    colors.Add("color6", "009900");
+    colors.Add("color7", "00b3e6");
+    colors.Add("color8", "0000cc");
+    colors.Add("color9", "330066");
+    colors.Add("color10", "8000b3");
+    colors.Add("color11", "898989");
+    colors.Add("color12", "8c564b");
 }
 
 @section Styles{
@@ -27,14 +30,18 @@
     <script src="https://cdn.jsdelivr.net/npm/es6-promise@4/dist/es6-promise.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/es6-promise@4/dist/es6-promise.auto.min.js"></script>
     <script src="https://unpkg.com/@("@")mapbox/mapbox-sdk/umd/mapbox-sdk.min.js"></script>
+    <script src="https://api.tiles.mapbox.com/mapbox.js/plugins/turf/v3.0.11/turf.min.js"></script>
+    <script src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-draw/v1.0.9/mapbox-gl-draw.js"></script>
+    <link rel="stylesheet" href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-draw/v1.0.9/mapbox-gl-draw.css" type="text/css" />
 
     <style>
         .marker {
             display: block;
             border: none;
-            border-radius: 50%;
+            //border-radius: 50%;
             cursor: pointer;
             padding: 0;
+            background-color: transparent;
         }
     </style>
 }
@@ -43,13 +50,12 @@
     <div class="container-fluid ht-100p pd-0-f">
         <div class="ht-100p d-flex flex-column">
             <div class="row mg-0">
-                <div class="col-10">
+                <div class="col-9 pd-0">
                     <div id="map" style="min-height:500px"></div>
                 </div>
-                <div class="col-2">
+                <div class="col-3">
                     <br>
-                    Use Ctrl+click to select multiple markers, or
-                    click some point to draw shape around markers to select them.
+                    Use Ctrl+click to select multiple markers, or draw a shape around markers to select them.
                     <br><br>
 
                     Selected markers:
@@ -57,17 +63,27 @@
                         <textarea id="selected_markers" class="form-control" rows="3"></textarea>
                     </div>
 
-                    Place to territory:
-                    @foreach (var teri in territories)
-                    {
-                        <div class="custom-control custom-radio" style="background-color: #@(colors["color"+counter]);padding: 5px 2rem;">
-                            <input type="radio" name="territory" id="@(teri)" value="@(counter++)" class="custom-control-input">
-                            <label class="custom-control-label" for="@(teri)">@teri</label>
+                    <div class="row">
+                        <div class="col-6">
+                            Place to territory:
+                            @foreach (var teri in territories)
+                            {
+                                <div class="custom-control custom-radio" style="background-color: #@(colors["color"+counter]);padding: 5px 2rem;">
+                                    <input type="radio" name="territory" id="@(teri)" value="@(counter++)" class="custom-control-input">
+                                    <label class="custom-control-label" for="@(teri)">@teri</label>
+                                </div>
+                            }
                         </div>
-                    }
+                        <div class="col-6">
+                            Visit Day:
+                            <div class="custom-control custom-radio" style="background-color: #@(colors["color"+counter]);padding: 5px 2rem;">
+                                <input type="radio" name="territory" id="" value="counter" class="custom-control-input">
+                                <label class="custom-control-label" for=""></label>
+                            </div>
+                        </div>
+                    </div>
 
                     <div class="row pd-20">
-                        <button type="button" class="btn btn-danger col-6" onclick="clearSelection()">Reset</button>
                         <button type="button" class="btn btn-primary col-6" onclick="applySelection()">Apply</button>
                     </div>
                 </div>
@@ -83,44 +99,97 @@
     <script>
         var allcusts = @(Html.Raw((JsonConvert.SerializeObject(Model.Customers)).Replace("\n", "").Replace("\r", "").Replace("\t", "").Replace(" \"", "\"").Replace(" \"", "\"").Replace(" \"", "\"").Replace(" \"", "\"").Replace(" \"", "\"").Replace(" \"", "\"").Replace(" \"", "\"").Replace(" \"", "\"")));
         var allterritories = @(Html.Raw((JsonConvert.SerializeObject(territories)).Replace("\n", "").Replace("\r", "").Replace("\t", "").Replace(" \"", "\"").Replace(" \"", "\"").Replace(" \"", "\"").Replace(" \"", "\"").Replace(" \"", "\"").Replace(" \"", "\"").Replace(" \"", "\"").Replace(" \"", "\"")));
+        var weekday = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']; //, 'Saturday', 'Sunday'
 
+        var selecting = false;
+        var selected = [];
+        var draw;
         var geojson = {
             'type': 'FeatureCollection',
-            'features': [{
-                    'type': 'Feature',
-                    'properties': {
-                        'message': 'Foo',
-                        'iconSize': [60, 60]
-                    },
-                    'geometry': {
-                        'type': 'Point',
-                        'coordinates': [-66.324462890625, -16.024695711685304]
-                    }
-                },
-                {
-                    'type': 'Feature',
-                    'properties': {
-                        'message': 'Bar',
-                        'iconSize': [50, 50]
-                    },
-                    'geometry': {
-                        'type': 'Point',
-                        'coordinates': [-61.2158203125, -15.97189158092897]
-                    }
-                },
-                {
-                    'type': 'Feature',
-                    'properties': {
-                        'message': 'Baz',
-                        'iconSize': [40, 40]
-                    },
-                    'geometry': {
-                        'type': 'Point',
-                        'coordinates': [-63.29223632812499, -18.28151823530889]
-                    }
-                }
-            ]
+            'features': []
         };
+
+        window.onkeydown = function(e) {
+            selecting = ((e.keyIdentifier == 'Control') || (e.ctrlKey == true));
+        }
+        window.onkeyup = function(e) {
+            selecting = false;
+        }
+
+        for (var i = 0; i < allcusts.length; i++) {
+            var allcust = allcusts[i];
+            var day_index = weekday.indexOf(allcust.visit_day)
+
+            if (day_index < 0)
+                day_index = 5;
+
+            if (allcust.geographical_x == "NULL" || allcust.geographical_y == "NULL" || Math.abs(parseInt(allcust.geographical_x)) > 1000 || Math.abs(parseInt(allcust.geographical_y)) > 1000) {
+                // skip data2 yg ccd
+            } else {
+                geojson.features.push({
+                    'type': 'Feature',
+                        'properties': {
+                            'id': allcust.customer_code,
+                            'territory': allcust.teritorry,
+                            'visit': allcust.visit_day,
+                            'message': '<b>' + allcust.customer_code + '</b><br>' + allcust.customer_name + '<br>' + allcust.customer_address + '<br>' + allcust.teritorry,
+                            'iconSize': [30, 30],
+                            'iconFile': '/content/marker/c_'+ allterritories.indexOf(allcust.teritorry) +'_'+day_index+'.png'
+                        },
+                        'geometry': {
+                            'type': 'Point',
+                            'coordinates': [allcust.geographical_y, allcust.geographical_x]
+                        }
+                });
+            }
+        }
+
+
+
+        function setTarget(target) {
+            $(target).css('background-image', 'url(/content/marker/c_selected.png)');
+            selected.push($(target).attr('id'));
+
+            document.getElementById('selected_markers').value = selected.join(", ");
+        }
+
+        function resetMarker() {
+            if (selected.length > 0) {
+                for (var i = 0; i < selected.length; i++) {
+                    var day_index = weekday.indexOf($('#'+selected[i]).attr('data-visit'));
+
+                    if (day_index < 0)
+                        day_index = 5;
+
+                    $('#'+selected[i]).css('background-image', 'url(/content/marker/c_'+ allterritories.indexOf($('#'+selected[i]).attr('data-territory')) +'_'+day_index+'.png)');
+                }
+            }
+
+            selected = [];
+        }
+
+        function updateArea() {
+            var data = draw.getAll();
+
+            if (data.features.length > 0) {
+                //var area = turf.area(data);
+
+                for (var h = 0; h < data.features.length; h++) {
+                    for (var i = 0; i < allcusts.length; i++) {
+                        var allcust = allcusts[i];
+
+                        var point = turf.point([allcust.geographical_y, allcust.geographical_x]); 
+                        var polygon = turf.polygon(data.features[h].geometry.coordinates); 
+
+                        if (turf.inside(point, polygon)) {
+                            setTarget('#'+allcust.customer_code);
+                        }
+                    }
+                } 
+            } else {
+                resetMarker();
+            }
+        }
 
         mapboxgl.accessToken = 'pk.eyJ1IjoiY2hhbmlmIiwiYSI6ImNpc2I1YnJ4OTAwMDMydnFvZDU3YzRydnMifQ.V_ra23LFfun83xlNR6PaXA';
         var mapboxClient = mapboxSdk({
@@ -170,34 +239,56 @@
                     map.addControl(new mapboxgl.NavigationControl());
 
 
+                    draw = new MapboxDraw({
+                        displayControlsDefault: false,
+                        controls: {
+                            polygon: true,
+                            trash: true
+                        }
+                    });
+
+                    map.addControl(draw);
+ 
+                    map.on('draw.create', updateArea);
+                    map.on('draw.delete', updateArea);
+                    //map.on('draw.update', updateArea);
+ 
+                    
+
                     geojson.features.forEach(function(marker) {
                         // create a DOM element for the marker
                         var el = document.createElement('div');
+                        el.id = marker.properties.id;
                         el.className = 'marker';
-                        el.style.backgroundImage =
-                            'url(https://placekitten.com/g/' +
-                            marker.properties.iconSize.join('/') +
-                            '/)';
+                        el.style.backgroundImage = 'url(' + marker.properties.iconFile + ')';
+                        el.style.backgroundSize = marker.properties.iconSize[0] + 'px';
                         el.style.width = marker.properties.iconSize[0] + 'px';
                         el.style.height = marker.properties.iconSize[1] + 'px';
 
-                        var popup = new mapboxgl.Popup({ offset: 25 }).setText(marker.properties.message);
+                        el.setAttribute('data-territory' , marker.properties.territory);
+                        el.setAttribute('data-visit' , marker.properties.visit);
+
+                        var popup = new mapboxgl.Popup({ offset: 25 }).setHTML(marker.properties.message);
+
+                        //console.log(marker.geometry.coordinates);
 
                         // add marker to map
                         new mapboxgl.Marker(el)
                             .setLngLat(marker.geometry.coordinates)
                             .setPopup(popup) // sets a popup on this marker
                             .addTo(map);
+
+                        el.addEventListener('click', function (e) {
+                            if (!selecting) {
+                                resetMarker();
+                                updateArea();
+                            }
+
+                            setTarget(e.target);
+                        });
                     });
-
-
                 }
             });
-
-
-
-        mapboxgl.accessToken = 'pk.eyJ1IjoiY2hhbmlmIiwiYSI6ImNpc2I1YnJ4OTAwMDMydnFvZDU3YzRydnMifQ.V_ra23LFfun83xlNR6PaXA';
-
 
     </script>
 

@@ -31,6 +31,8 @@ namespace Fast.Web.Models
         public string pposm_category { get; set; }
         public string cluster { get; set; }
         public int order_number { get; set; }
+        public string visit_day { get; set; }
+
     }
 
     public class CustomerListModel
