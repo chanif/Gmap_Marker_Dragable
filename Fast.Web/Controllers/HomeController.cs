@@ -37,5 +37,32 @@ namespace Fast.Web.Controllers
 
             return View(model);
         }
+
+        [HttpPost]
+        public ActionResult Update(List<string> customers, string territory = "", string visit_day = "")
+        {
+            try
+            {
+                foreach(var cust in customers)
+                {
+                    string customer = _customerAppService.FindByNoTracking("customer_code", cust);
+                    var customerModel = JsonConvert.DeserializeObject<List<CustomerModel>>(customer).FirstOrDefault();
+                    
+                    if(territory != "")
+                        customerModel.teritorry = territory;
+                    if (visit_day != "")
+                        customerModel.visit_day = visit_day;
+
+                    var data = JsonHelper<CustomerModel>.Serialize(customerModel);
+                    _customerAppService.Update(data);
+                }
+
+                return Json(new { Status = "True" }, JsonRequestBehavior.AllowGet);
+            }
+            catch (Exception ex)
+            {
+                return Json(new { Status = "False" }, JsonRequestBehavior.AllowGet);
+            }
+        }
     }
 }

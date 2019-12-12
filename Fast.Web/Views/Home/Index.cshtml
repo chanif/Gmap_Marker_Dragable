@@ -4,20 +4,20 @@
 
 @{
     var territories = Model.Customers.Select(x => x.teritorry).Distinct().ToList();
-    var counter = 1;
+    var counter = 0;
     Dictionary<string, string> colors = new Dictionary<string, string>();
-    colors.Add("color1", "e60000");
-    colors.Add("color2", "ff6633");
-    colors.Add("color3", "ffcc00");
-    colors.Add("color4", "ffff33");
-    colors.Add("color5", "99ff66");
-    colors.Add("color6", "009900");
-    colors.Add("color7", "00b3e6");
-    colors.Add("color8", "0000cc");
-    colors.Add("color9", "330066");
-    colors.Add("color10", "8000b3");
-    colors.Add("color11", "898989");
-    colors.Add("color12", "8c564b");
+    colors.Add("color0", "e60000");
+    colors.Add("color1", "ff6633");
+    colors.Add("color2", "ffcc00");
+    colors.Add("color3", "ffff33");
+    colors.Add("color4", "99ff66");
+    colors.Add("color5", "009900");
+    colors.Add("color6", "00b3e6");
+    colors.Add("color7", "0000cc");
+    colors.Add("color8", "330066");
+    colors.Add("color9", "8000b3");
+    colors.Add("color10", "898989");
+    colors.Add("color11", "8c564b");
 }
 
 @section Styles{
@@ -50,10 +50,10 @@
     <div class="container-fluid ht-100p pd-0-f">
         <div class="ht-100p d-flex flex-column">
             <div class="row mg-0">
-                <div class="col-9 pd-0">
-                    <div id="map" style="min-height:500px"></div>
+                <div class="col-8 pd-0">
+                    <div id="map" style="min-height:550px"></div>
                 </div>
-                <div class="col-3">
+                <div class="col-4">
                     <br>
                     Use Ctrl+click to select multiple markers, or draw a shape around markers to select them.
                     <br><br>
@@ -68,23 +68,43 @@
                             Place to territory:
                             @foreach (var teri in territories)
                             {
-                                <div class="custom-control custom-radio" style="background-color: #@(colors["color"+counter]);padding: 5px 2rem;">
-                                    <input type="radio" name="territory" id="@(teri)" value="@(counter++)" class="custom-control-input">
-                                    <label class="custom-control-label" for="@(teri)">@teri</label>
+                                <div class="custom-control custom-radio" style="background-color: #@(colors["color"+counter++]);padding: 5px 2rem;">
+                                    <input type="radio" name="territory" id="@(teri)" value="@(teri)" class="custom-control-input">
+                                    <label class="custom-control-label font-weight-bold tx-white" for="@(teri)">@teri</label>
                                 </div>
                             }
                         </div>
                         <div class="col-6">
                             Visit Day:
-                            <div class="custom-control custom-radio" style="background-color: #@(colors["color"+counter]);padding: 5px 2rem;">
-                                <input type="radio" name="territory" id="" value="counter" class="custom-control-input">
-                                <label class="custom-control-label" for=""></label>
+                            <div class="custom-control custom-radio" style="background-color: #000;padding: 5px 2rem;">
+                                <input type="radio" name="day" id="0" value="Monday" class="custom-control-input">
+                                <label class="custom-control-label font-weight-bold tx-white" for="0">Monday <img src="/content/marker/day0.png" width="20" style="float:right;margin-left: 5px;" /></label>
+                            </div>
+                            <div class="custom-control custom-radio" style="background-color: #000;padding: 5px 2rem;">
+                                <input type="radio" name="day" id="1" value="Tuesday" class="custom-control-input">
+                                <label class="custom-control-label font-weight-bold tx-white" for="1">Tuesday <img src="/content/marker/day1.png" width="20" style="float:right;margin-left: 5px;" /></label>
+                            </div>
+                            <div class="custom-control custom-radio" style="background-color: #000;padding: 5px 2rem;">
+                                <input type="radio" name="day" id="2" value="Wednesday" class="custom-control-input">
+                                <label class="custom-control-label font-weight-bold tx-white" for="2">Wednesday <img src="/content/marker/day2.png" width="20" style="float:right;margin-left: 5px;" /></label>
+                            </div>
+                            <div class="custom-control custom-radio" style="background-color: #000;padding: 5px 2rem;">
+                                <input type="radio" name="day" id="3" value="Thursday" class="custom-control-input">
+                                <label class="custom-control-label font-weight-bold tx-white" for="3">Thursday <img src="/content/marker/day3.png" width="20" style="float:right;margin-left: 5px;" /></label>
+                            </div>
+                            <div class="custom-control custom-radio" style="background-color: #000;padding: 5px 2rem;">
+                                <input type="radio" name="day" id="4" value="Friday" class="custom-control-input">
+                                <label class="custom-control-label font-weight-bold tx-white" for="4">Friday <img src="/content/marker/day4.png" width="20" style="float:right;margin-left: 5px;" /></label>
+                            </div>
+                            <div class="custom-control custom-radio" style="background-color: #000;padding: 5px 2rem;">
+                                <input type="radio" name="day" id="5" value="null" class="custom-control-input">
+                                <label class="custom-control-label font-weight-bold tx-white" for="5">Not Defined <img src="/content/marker/day5.png" width="20" style="float:right;margin-left: 5px;" /></label>
                             </div>
                         </div>
                     </div>
 
                     <div class="row pd-20">
-                        <button type="button" class="btn btn-primary col-6" onclick="applySelection()">Apply</button>
+                        <button type="button" class="btn btn-primary col-12" onclick="applySelection()">Apply</button>
                     </div>
                 </div>
             </div>
@@ -123,7 +143,7 @@
             if (day_index < 0)
                 day_index = 5;
 
-            if (allcust.geographical_x == "NULL" || allcust.geographical_y == "NULL" || Math.abs(parseInt(allcust.geographical_x)) > 1000 || Math.abs(parseInt(allcust.geographical_y)) > 1000) {
+            if (allcust.geographical_x == "NULL" || allcust.geographical_y == "NULL" || Math.abs(parseInt(allcust.geographical_x)) == 0 || Math.abs(parseInt(allcust.geographical_x)) > 1000 || Math.abs(parseInt(allcust.geographical_y)) > 1000) {
                 // skip data2 yg ccd
             } else {
                 geojson.features.push({
@@ -154,6 +174,8 @@
         }
 
         function resetMarker() {
+            draw.deleteAll();
+
             if (selected.length > 0) {
                 for (var i = 0; i < selected.length; i++) {
                     var day_index = weekday.indexOf($('#'+selected[i]).attr('data-visit'));
@@ -166,6 +188,7 @@
             }
 
             selected = [];
+            document.getElementById('selected_markers').value = "";
         }
 
         function updateArea() {
@@ -196,7 +219,7 @@
             accessToken: mapboxgl.accessToken
         });
         mapboxClient.geocoding.forwardGeocode({
-                query: 'Kuningan City jakarta',
+                query: "@(Model.Customers[0].kecamatan + " " + Model.Customers[0].dati_II) indonesia",
                 autocomplete: false,
                 limit: 1
             })
@@ -289,6 +312,44 @@
                     });
                 }
             });
+
+        function applySelection() {
+            var terValue = $("input[name='territory']:checked").val();
+            var dayValue = $("input[name='day']:checked").val();
+
+            $.ajax({
+                type: "POST",
+                url: "@Url.Action("Update", "Home")",
+                data: JSON.stringify({
+                    customers: selected,
+                    territory: terValue,
+                    visit_day: dayValue
+                }),
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function (result) {
+                    if (result.Status == 'True') {
+                        alert("berhasil tersimpan");
+                    }
+                    else {
+                        alert("gagal tersimpan");
+                    }
+                }
+            });
+
+            if (selected.length > 0) {
+                for (var i = 0; i < selected.length; i++) {
+                    if (typeof terValue !== 'undefined') 
+                        $('#' + selected[i]).attr('data-territory', terValue);
+                    if (typeof dayValue !== 'undefined') 
+                        $('#' + selected[i]).attr('data-visit', dayValue);
+                }
+            }
+
+            resetMarker();
+            $('input[name="territory"]').attr('checked', false);
+            $('input[name="day"]').attr('checked', false);
+        }
 
     </script>
 

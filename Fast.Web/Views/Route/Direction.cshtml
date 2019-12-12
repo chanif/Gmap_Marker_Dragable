@@ -4,7 +4,7 @@
 
 @{
     var territories = Model.Customers.Select(x => x.teritorry).Distinct().ToList();
-    Model.Customers = Model.Customers.Where(x => x.teritorry == Model.Territory).OrderBy(x=>x.order_number).ThenBy(x=>x.geographical_y).ToList();
+    Model.Customers = Model.Customers.Where(x => x.teritorry == Model.Territory).OrderBy(x => x.customer_code).ToList();
 
     var page = Int32.Parse(Request.Params["page"]);
 
@@ -13,7 +13,7 @@
 
     if (page > 1)
     {
-        skip = (20 * (page - 1)) - 1;
+        skip = (take * (page - 1)) - 1;
     }
 
     Model.Customers = Model.Customers.Skip(skip).Take(take).ToList();
@@ -21,31 +21,29 @@
 
 @section Styles{
     <link href="~/Content/dashforge/assets/css/dashforge.css" rel="stylesheet">
+    <script src='https://api.mapbox.com/mapbox-gl-js/v1.4.1/mapbox-gl.js'></script>
+    <link href='https://api.mapbox.com/mapbox-gl-js/v1.4.1/mapbox-gl.css' rel='stylesheet' />
+    <script src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v4.4.2/mapbox-gl-geocoder.min.js"></script>
+    <link rel="stylesheet" href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v4.4.2/mapbox-gl-geocoder.css" type="text/css" />
+    <!-- Promise polyfill script required to use Mapbox GL Geocoder in IE 11 -->
+    <script src="https://cdn.jsdelivr.net/npm/es6-promise@4/dist/es6-promise.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/es6-promise@4/dist/es6-promise.auto.min.js"></script>
+    <script src="https://unpkg.com/@("@")mapbox/mapbox-sdk/umd/mapbox-sdk.min.js"></script>
+    <script src="https://api.tiles.mapbox.com/mapbox.js/plugins/turf/v3.0.11/turf.min.js"></script>
+    <script src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-directions/v4.0.2/mapbox-gl-directions.js"></script>
+    <link rel="stylesheet"
+          href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-directions/v4.0.2/mapbox-gl-directions.css"
+          type="text/css" />
 
     <style>
-        body.dragging, body.dragging * {
-            cursor: move !important;
-        }
-
-        .dragged {
-            position: absolute;
-            opacity: 0.5;
-            z-index: 2000;
-        }
-
-        ol.cust-order li {
+        .marker {
+            display: block;
+            border: none;
+            //border-radius: 50%;
             cursor: pointer;
+            padding: 0;
+            background-color: transparent;
         }
-
-            ol.cust-order li.placeholder {
-                position: relative;
-                /** More li styles **/
-            }
-
-                ol.cust-order li.placeholder:before {
-                    position: absolute;
-                    /** Define arrowhead **/
-                }
     </style>
 }
 
@@ -76,7 +74,7 @@
                     </ol>
 
                     <div class="row pd-20">
-                        <a class="btn btn-primary col-12" href="/Route/Dirrection?territory=@(Request.Params["territory"])&page=@(1+ Int32.Parse(Request.Params["page"]))">Next</a>
+                        <a class="btn btn-primary col-12" href="/Route/Direction?territory=@(Request.Params["territory"])&page=@(1+ Int32.Parse(Request.Params["page"]))">Next</a>
                     </div>
                 </div>
             </div>
@@ -90,6 +88,134 @@
     <script src="~/Content/dashforge/lib/jquery-sortable/js/jquery-sortable-min.js"></script>
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDpjc1xdCmFJ6pptU_NVA54Cjpi_kqFaEU&libraries=geometry"></script>
 
+    <script>
+        var allcusts = @(Html.Raw((JsonConvert.SerializeObject(Model.Customers)).Replace("\n", "").Replace("\r", "").Replace("\t", "").Replace(" \"", "\"").Replace(" \"", "\"").Replace(" \"", "\"").Replace(" \"", "\"").Replace(" \"", "\"").Replace(" \"", "\"").Replace(" \"", "\"").Replace(" \"", "\"")));
+        var allterritories = @(Html.Raw((JsonConvert.SerializeObject(territories)).Replace("\n", "").Replace("\r", "").Replace("\t", "").Replace(" \"", "\"").Replace(" \"", "\"").Replace(" \"", "\"").Replace(" \"", "\"").Replace(" \"", "\"").Replace(" \"", "\"").Replace(" \"", "\"").Replace(" \"", "\"")));
+        var weekday = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']; //, 'Saturday', 'Sunday'
+        var valid_loc = [];
+        var geojson = {
+            'type': 'FeatureCollection',
+            'features': []
+        };
+
+        for (var i = 0; i < allcusts.length; i++) {
+            var allcust = allcusts[i];
+            var day_index = weekday.indexOf(allcust.visit_day)
+
+            if (day_index < 0)
+                day_index = 5;
+
+            if (allcust.geographical_x == "NULL" || allcust.geographical_y == "NULL" || Math.abs(parseInt(allcust.geographical_x)) == 0 || Math.abs(parseInt(allcust.geographical_x)) > 1000 || Math.abs(parseInt(allcust.geographical_y)) > 1000) {
+                // skip data2 yg ccd
+            } else {
+                valid_loc.push([allcust.geographical_y, allcust.geographical_x]);
+                geojson.features.push({
+                    'type': 'Feature',
+                        'properties': {
+                            'id': allcust.customer_code,
+                            'territory': allcust.teritorry,
+                            'visit': allcust.visit_day,
+                            'message': '<b>' + allcust.customer_code + '</b><br>' + allcust.customer_name + '<br>' + allcust.customer_address + '<br>' + allcust.teritorry,
+                            'iconSize': [30, 30],
+                            'iconFile': '/content/marker/c_'+ allterritories.indexOf(allcust.teritorry) +'_'+day_index+'.png'
+                        },
+                        'geometry': {
+                            'type': 'Point',
+                            'coordinates': [allcust.geographical_y, allcust.geographical_x]
+                        }
+                });
+            }
+        }
+
+        console.log(valid_loc);
+
+        mapboxgl.accessToken = 'pk.eyJ1IjoiY2hhbmlmIiwiYSI6ImNpc2I1YnJ4OTAwMDMydnFvZDU3YzRydnMifQ.V_ra23LFfun83xlNR6PaXA';
+        var mapboxClient = mapboxSdk({
+            accessToken: mapboxgl.accessToken
+        });
+        mapboxClient.geocoding.forwardGeocode({
+                query: "@(Model.Customers[0].kecamatan + " " + Model.Customers[0].dati_II) indonesia",
+                autocomplete: false,
+                limit: 1
+            })
+            .send()
+            .then(function(response) {
+                if (
+                    response &&
+                    response.body &&
+                    response.body.features &&
+                    response.body.features.length
+                ) {
+                    var feature = response.body.features[0];
+
+                    var map = new mapboxgl.Map({
+                        container: 'map',
+                        style: 'mapbox://styles/mapbox/streets-v11',
+                        center: feature.center,
+                        zoom: 13
+                    });
+
+                    var directions = new MapboxDirections({
+                      accessToken: mapboxgl.accessToken,
+                      unit: 'metric',
+                      profile: 'cycling'
+                    });
+
+                    map.addControl(directions);
+
+                    map.on('load', function () {
+                        for (var i = 0; i < valid_loc.length; i++) {
+                            if (i == 0)
+                                directions.setOrigin(valid_loc[i]);
+                            else if (i == (valid_loc.length - 1))
+                                directions.setDestination(valid_loc[i]);
+                            else
+                                directions.addWaypoint(i-1, valid_loc[i]);
+                        }
+                    });
+
+                    directions.on('route', function (e) {
+                        console.log(e.route); // Logs the current route shown in the interface.
+                    });
+
+                    geojson.features.forEach(function(marker) {
+                        // create a DOM element for the marker
+                        var el = document.createElement('div');
+                        el.id = marker.properties.id;
+                        el.className = 'marker';
+                        el.style.backgroundImage = 'url(' + marker.properties.iconFile + ')';
+                        el.style.backgroundSize = marker.properties.iconSize[0] + 'px';
+                        el.style.width = marker.properties.iconSize[0] + 'px';
+                        el.style.height = marker.properties.iconSize[1] + 'px';
+
+                        el.setAttribute('data-territory' , marker.properties.territory);
+                        el.setAttribute('data-visit' , marker.properties.visit);
+
+                        var popup = new mapboxgl.Popup({ offset: 25 }).setHTML(marker.properties.message);
+
+                        //console.log(marker.geometry.coordinates);
+
+                        // add marker to map
+                        new mapboxgl.Marker(el)
+                            .setLngLat(marker.geometry.coordinates)
+                            .setPopup(popup) // sets a popup on this marker
+                            .addTo(map);
+
+                        el.addEventListener('click', function (e) {
+                            if (!selecting) {
+                                resetMarker();
+                                updateArea();
+                            }
+
+                            setTarget(e.target);
+                        });
+                    });
+                }
+            });
+
+    </script>
+
+    <!--
     <script type="text/javascript">
         var allcusts = @(Html.Raw((JsonConvert.SerializeObject(Model.Customers)).Replace("\n", "").Replace("\r", "").Replace("\t", "").Replace(" \"", "\"").Replace(" \"", "\"").Replace(" \"", "\"").Replace(" \"", "\"").Replace(" \"", "\"").Replace(" \"", "\"").Replace(" \"", "\"").Replace(" \"", "\"")));
         var allterritories = @(Html.Raw((JsonConvert.SerializeObject(territories)).Replace("\n", "").Replace("\r", "").Replace("\t", "").Replace(" \"", "\"").Replace(" \"", "\"").Replace(" \"", "\"").Replace(" \"", "\"").Replace(" \"", "\"").Replace(" \"", "\"").Replace(" \"", "\"").Replace(" \"", "\"")));
@@ -175,14 +301,14 @@
             //set the directions display service to the map
             directionDisplay.setMap(map);
             //set the directions display panel
-            //panel is usually just and empty div.  
+            //panel is usually just and empty div.
             //This is where the turn by turn directions appear.
-            //directionDisplay.setPanel(directionsPanel); 
+            //directionDisplay.setPanel(directionsPanel);
 
             //build the waypoints
             //free api allows a max of 9 total stops including the start and end address
-            //premier allows a total of 25 stops. 
-            
+            //premier allows a total of 25 stops.
+
             var waypoints = [];
             var last_locat = '';
 
@@ -226,7 +352,7 @@
             google.maps.event.addDomListener(window, 'load', initialize);
 
             $("#territory_selection").change(function () {
-                window.location.href = "/Route/Dirrection?territory="+$(this).val()+"&page=1";
+                window.location.href = "/Route/Direction?territory="+$(this).val()+"&page=1";
             })
 
             $('ol.cust-order li').click(function () {
@@ -249,4 +375,6 @@
 
         });
     </script>
+    -->
+
 }

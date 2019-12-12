@@ -52,7 +52,7 @@ namespace Fast.Web.Controllers
             }
         }
 
-        public ActionResult Dirrection(string territory = "", int page = 1)
+        public ActionResult Direction(string territory = "", int page = 1)
         {
             var model = new CustomerListModel();
             model.District = "DJKT001";
@@ -63,21 +63,16 @@ namespace Fast.Web.Controllers
             string customers = _customerAppService.Find(filters);
             //string customers = _customerAppService.GetAll();
             model.Customers = string.IsNullOrEmpty(customers) ? new List<CustomerModel>() : JsonConvert.DeserializeObject<List<CustomerModel>>(customers);
-            model.Customers = model.Customers.OrderBy(x => x.teritorry).ThenBy(x => x.order_number).ToList();
+            model.Customers = model.Customers.OrderBy(x => x.teritorry).ThenByDescending(x => x.geographical_y).ToList();
 
             if (territory == "")
             {
-                return RedirectToAction("Dirrection", new { territory = model.Customers[0].teritorry, page = 1 });
+                return RedirectToAction("Direction", new { territory = model.Customers[0].teritorry, page = 1 });
             }
             else
             {
                 model.Territory = territory;
                 var temp_cust = model.Customers.Where(x => x.teritorry == model.Territory).ToList();
-
-                if (temp_cust[(temp_cust.Count() - 1)].order_number == 0)
-                {
-                    model.Customers = model.Customers.OrderBy(x => x.teritorry).ThenByDescending(x => x.geographical_y).ToList();
-                }
 
                 return View(model);
             }

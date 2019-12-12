@@ -5419,7 +5419,7 @@
     <Content Include="Views\Unauthorized\Index.cshtml" />
     <Content Include="Views\Approval\Index.cshtml" />
     <Content Include="Views\Route\Index.cshtml" />
-    <Content Include="Views\Route\Dirrection.cshtml" />
+    <Content Include="Views\Route\Direction.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
